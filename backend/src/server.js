@@ -74,12 +74,15 @@ function parseJsonBody(req) {
   });
 }
 
-const server = http.createServer(async (req, res) => {
-  const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '127.0.0.1')
+export async function handleRequest(req, res) {
+  const clientIp = (req.headers['x-forwarded-for'] || req.socket?.remoteAddress || '127.0.0.1')
     .split(',')[0]
     .trim();
   const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
-  const pathname = url.pathname;
+  let pathname = url.pathname;
+  if (!pathname.startsWith('/api') && pathname !== '/') {
+    pathname = `/api${pathname}`;
+  }
   const method = req.method;
 
   // Handle CORS Pre-flight
@@ -425,7 +428,10 @@ const server = http.createServer(async (req, res) => {
       error: error.message || 'Internal Server Error',
     });
   }
-});
+}
+
+const server = http.createServer(handleRequest);
+export { server };
 
 const isDirectExecution = process.argv[1] && process.argv[1].replace(/\\/g, '/').endsWith('src/server.js');
 

@@ -1,0 +1,8 @@
+# Vercel Deployment Ignore List
+.env
+.env.local
+.git
+database/saheli.db*
+database/backups
+backend/database
+scripts/dev.js

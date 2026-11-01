@@ -8,6 +8,13 @@
     "frontend",
     "backend"
   ],
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.118.0",
+    "nodemailer": "^10.3.1"
+  },
   "scripts": {
     "dev": "node scripts/dev.js",
     "start": "node scripts/dev.js",
