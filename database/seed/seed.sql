@@ -1,0 +1,6 @@
+-- Initial Safe Places Fixtures with verified coordinates
+INSERT OR IGNORE INTO safe_places (id, name, category, distance, time_est, address, latitude, longitude, open_status, is_verified, phone, safety_tags, features) VALUES
+('sp-1', 'College Campus Security Post', 'Security Post', '120m away', '2 min walk', 'Gate 2, Central University Campus', 28.6152, 77.2082, 'Open 24/7', 1, '011-2345678', '["Security","CCTV","24/7","First Aid"]', '["Uniformed Guards","High-Mast Lights","Emergency Gate"]'),
+('sp-2', 'Apollo 24/7 Pharmacy', 'Pharmacy', '240m away', '3 min walk', 'Shop 4, Commercial Complex, Main Road', 28.6125, 77.2078, 'Open 24/7', 1, '011-9876543', '["24/7","CCTV","First Aid","Security"]', '["Well-Lit Storefront","CCTV Active","First Aid"]'),
+('sp-3', 'Civil Hospital Emergency Ward', 'Hospital', '550m away', '7 min walk', 'Sector 4, Main Hospital Blvd', 28.6145, 77.2105, 'Emergency Open 24/7', 1, '102 / 011-8765432', '["24/7","Security","First Aid","CCTV"]', '["Paramedics On Site","Police Desk Inside","Ambulance Standby"]'),
+('sp-4', 'Safe Partner Store - Daily Mart', 'Safe Partner Store', '380m away', '5 min walk', 'Crossroad 9, Green Avenue', 28.6118, 77.2110, 'Open until 11:30 PM', 1, '011-5432109', '["Security","CCTV","First Aid"]', '["Verified Merchant","Indoor Seating","CCTV Monitored"]');

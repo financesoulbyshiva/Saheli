@@ -1,0 +1,1324 @@
+/* ==========================================================================
+   SAHELI COMPONENT STYLES — FINTECH SAAS / CYBER-SAFETY DESIGN SYSTEM
+   Dark Obsidian, Frosted Glass, Ambient Glows, Circuit Borders
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   BUTTONS (.saheli-btn)
+   -------------------------------------------------------------------------- */
+.saheli-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  font-family: var(--font-family-base);
+  font-weight: var(--font-weight-semibold);
+  border-radius: var(--radius-full);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  text-decoration: none;
+  min-height: var(--min-touch-target);
+  padding: 0 var(--space-4);
+  line-height: 1;
+  position: relative;
+  user-select: none;
+}
+
+.saheli-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.saheli-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.saheli-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* Button Sizes */
+.saheli-btn--sm {
+  font-size: var(--font-size-xs);
+  min-height: 36px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-full);
+}
+
+.saheli-btn--md {
+  font-size: var(--font-size-sm);
+  min-height: 44px;
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-full);
+}
+
+.saheli-btn--lg {
+  font-size: var(--font-size-base);
+  min-height: 52px;
+  padding: 0 var(--space-6);
+  border-radius: var(--radius-full);
+}
+
+.saheli-btn--full {
+  width: 100%;
+}
+
+.saheli-btn__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Button Color Variants (TailGrids SaaSly Clean Style) */
+.saheli-btn--primary {
+  background-color: #3758F9;
+  color: #FFFFFF;
+  border-color: #3758F9;
+  box-shadow: 0 4px 14px rgba(55, 88, 249, 0.35);
+}
+.saheli-btn--primary:hover:not(:disabled) {
+  background-color: #2646E5;
+  border-color: #2646E5;
+  box-shadow: 0 6px 18px rgba(55, 88, 249, 0.45);
+}
+
+.saheli-btn--secondary {
+  background-color: var(--color-bg-surface);
+  color: var(--color-text-primary);
+  border-color: var(--color-border-default);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+.saheli-btn--secondary:hover:not(:disabled) {
+  background-color: var(--color-bg-surface-subtle);
+  border-color: var(--color-border-strong);
+  color: var(--color-text-primary);
+}
+
+.saheli-btn--danger {
+  background-color: #EF4444;
+  color: #FFFFFF;
+  border-color: #EF4444;
+  box-shadow: 0 4px 14px rgba(239, 68, 68, 0.4);
+}
+.saheli-btn--danger:hover:not(:disabled) {
+  background-color: #DC2626;
+  border-color: #DC2626;
+  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.55);
+}
+
+.saheli-btn--caution {
+  background-color: #F59E0B;
+  color: #FFFFFF;
+  font-weight: 700;
+  border-color: #F59E0B;
+  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.3);
+}
+.saheli-btn--caution:hover:not(:disabled) {
+  background-color: #D97706;
+  border-color: #D97706;
+  box-shadow: 0 6px 18px rgba(245, 158, 11, 0.45);
+}
+
+.saheli-btn--success {
+  background-color: #10B981;
+  color: #FFFFFF;
+  border-color: #10B981;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+}
+.saheli-btn--success:hover:not(:disabled) {
+  background-color: #059669;
+  border-color: #059669;
+  box-shadow: 0 6px 18px rgba(16, 185, 129, 0.45);
+}
+
+.saheli-btn--ghost {
+  background-color: transparent;
+  color: var(--color-text-secondary);
+  border-color: transparent;
+}
+.saheli-btn--ghost:hover:not(:disabled) {
+  background-color: var(--color-bg-surface-subtle);
+  color: var(--color-text-primary);
+}
+
+/* --------------------------------------------------------------------------
+   CARDS (.saheli-card) — TAILGRIDS SAASLY CLEAN ARCHITECTURE
+   -------------------------------------------------------------------------- */
+.saheli-card {
+  background-color: var(--color-bg-surface);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-xl);
+  padding: var(--space-5);
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05);
+  transition: transform var(--transition-normal), box-shadow var(--transition-normal), border-color var(--transition-normal);
+  position: relative;
+}
+
+.saheli-card:hover {
+  border-color: var(--color-border-default);
+  box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.08);
+}
+
+.saheli-card--elevated {
+  background-color: var(--color-bg-surface-elevated);
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.08);
+  border-color: var(--color-border-subtle);
+}
+
+.saheli-card--interactive {
+  cursor: pointer;
+}
+.saheli-card--interactive:hover {
+  transform: translateY(-2px);
+  border-color: #3758F9;
+  box-shadow: 0 16px 36px -8px rgba(55, 88, 249, 0.12);
+}
+
+.saheli-card__header {
+  margin-bottom: var(--space-3);
+}
+
+.saheli-card__title {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  letter-spacing: -0.01em;
+}
+
+.saheli-card__description {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin-top: var(--space-1);
+}
+
+/* --------------------------------------------------------------------------
+   BADGES (.saheli-badge)
+   -------------------------------------------------------------------------- */
+.saheli-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-weight: var(--font-weight-semibold);
+  border-radius: var(--radius-full);
+  line-height: 1;
+  padding: 4px 10px;
+  font-size: var(--font-size-xs);
+  letter-spacing: 0.03em;
+}
+
+.saheli-badge--sm {
+  font-size: 0.6875rem;
+  padding: 3px 8px;
+}
+
+.saheli-badge--md {
+  font-size: var(--font-size-sm);
+  padding: 4px 12px;
+}
+
+.saheli-badge--neutral {
+  background-color: var(--color-bg-surface-subtle);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border-subtle);
+}
+
+.saheli-badge--primary {
+  background-color: rgba(56, 189, 248, 0.12);
+  color: var(--color-brand-primary);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+}
+
+.saheli-badge--safe {
+  background-color: var(--color-state-safe-bg);
+  color: var(--color-state-safe-text);
+  border: 1px solid var(--color-state-safe-border);
+}
+
+.saheli-badge--caution {
+  background-color: var(--color-state-caution-bg);
+  color: var(--color-state-caution-text);
+  border: 1px solid var(--color-state-caution-border);
+}
+
+.saheli-badge--threat {
+  background-color: var(--color-state-threat-bg);
+  color: var(--color-state-threat-text);
+  border: 1px solid var(--color-state-threat-border);
+}
+
+.saheli-badge--emergency {
+  background-color: var(--color-state-emergency-bg);
+  color: var(--color-state-emergency-text);
+  border: 1px solid var(--color-state-emergency-border);
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.25);
+}
+
+.saheli-badge--recovered {
+  background-color: var(--color-state-recovered-bg);
+  color: var(--color-state-recovered-text);
+  border: 1px solid var(--color-state-recovered-border);
+}
+
+/* --------------------------------------------------------------------------
+   STATUS INDICATOR (.saheli-status-indicator)
+   -------------------------------------------------------------------------- */
+.saheli-status-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.saheli-status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: var(--radius-full);
+  display: inline-block;
+  flex-shrink: 0;
+  box-shadow: 0 0 8px currentColor;
+}
+
+.saheli-status-indicator--sm .saheli-status-dot {
+  width: 8px;
+  height: 8px;
+}
+
+.saheli-status-indicator--lg .saheli-status-dot {
+  width: 14px;
+  height: 14px;
+}
+
+.saheli-status-dot--safe { background-color: var(--color-state-safe); color: var(--color-state-safe); }
+.saheli-status-dot--caution { background-color: var(--color-state-caution); color: var(--color-state-caution); }
+.saheli-status-dot--threat { background-color: var(--color-state-threat); color: var(--color-state-threat); }
+.saheli-status-dot--emergency { background-color: var(--color-state-emergency); color: var(--color-state-emergency); }
+.saheli-status-dot--recovered { background-color: var(--color-state-recovered); color: var(--color-state-recovered); }
+
+@keyframes status-pulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.35); opacity: 0.55; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.saheli-status-dot--pulse {
+  animation: status-pulse 1.8s infinite ease-in-out;
+}
+
+.saheli-status-label {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.04em;
+}
+
+.saheli-status-label--safe { color: var(--color-state-safe-text); }
+.saheli-status-label--caution { color: var(--color-state-caution-text); }
+.saheli-status-label--threat { color: var(--color-state-threat-text); }
+.saheli-status-label--emergency { color: var(--color-state-emergency-text); }
+.saheli-status-label--recovered { color: var(--color-state-recovered-text); }
+
+.header-status-pill {
+  display: flex;
+  align-items: center;
+  padding: 6px 12px;
+  background-color: var(--color-bg-surface-subtle);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+.header-status-pill:hover {
+  background-color: var(--color-bg-surface-muted);
+  border-color: var(--color-brand-border);
+  box-shadow: 0 0 12px var(--color-brand-subtle);
+}
+
+/* --------------------------------------------------------------------------
+   SAFETY STATUS CARD (.saheli-safety-card)
+   -------------------------------------------------------------------------- */
+.saheli-safety-card {
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  border: 1px solid var(--color-border-subtle);
+  background: var(--color-glass-bg);
+  backdrop-filter: blur(var(--blur-glass));
+  -webkit-backdrop-filter: blur(var(--blur-glass));
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-normal);
+  position: relative;
+  overflow: hidden;
+}
+
+.saheli-safety-card--safe {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(14, 20, 36, 0.8) 100%);
+  border-color: var(--color-state-safe-border);
+}
+
+.saheli-safety-card--caution {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.10) 0%, rgba(14, 20, 36, 0.8) 100%);
+  border-color: var(--color-state-caution-border);
+}
+
+.saheli-safety-card--threat {
+  background: linear-gradient(135deg, rgba(249, 115, 22, 0.12) 0%, rgba(14, 20, 36, 0.8) 100%);
+  border-color: var(--color-state-threat-border);
+}
+
+.saheli-safety-card--emergency {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.18) 0%, rgba(14, 20, 36, 0.9) 100%);
+  border-color: var(--color-state-emergency-border);
+  box-shadow: var(--shadow-emergency);
+}
+
+.saheli-safety-card--recovered {
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.08) 0%, rgba(14, 20, 36, 0.8) 100%);
+  border-color: var(--color-state-recovered-border);
+}
+
+.saheli-safety-card__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-4);
+}
+
+.saheli-safety-card__icon-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+.state-icon--safe { color: var(--color-state-safe-text); }
+.state-icon--caution { color: var(--color-state-caution-text); }
+.state-icon--threat { color: var(--color-state-threat-text); }
+.state-icon--emergency { color: var(--color-state-emergency); }
+.state-icon--recovered { color: var(--color-state-recovered-text); }
+
+.saheli-safety-card__title {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-extrabold);
+  margin-bottom: var(--space-2);
+  line-height: 1.25;
+}
+
+.saheli-safety-card--safe .saheli-safety-card__title { color: #FFFFFF; }
+.saheli-safety-card--caution .saheli-safety-card__title { color: #FBBF24; }
+.saheli-safety-card--threat .saheli-safety-card__title { color: #FB923C; }
+.saheli-safety-card--emergency .saheli-safety-card__title { color: #FCA5A5; }
+.saheli-safety-card--recovered .saheli-safety-card__title { color: #67E8F9; }
+
+.saheli-safety-card__description {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  line-height: var(--line-height-relaxed);
+  max-width: 600px;
+}
+
+.saheli-safety-card__actions {
+  margin-top: var(--space-5);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+/* --------------------------------------------------------------------------
+   EMERGENCY BUTTON (.saheli-emergency-btn)
+   -------------------------------------------------------------------------- */
+.saheli-emergency-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  background: linear-gradient(135deg, #EF4444 0%, #B91C1C 100%);
+  color: #FFFFFF;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: var(--radius-xl);
+  cursor: pointer;
+  box-shadow: var(--shadow-emergency);
+  transition: all var(--transition-fast);
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  text-align: left;
+}
+
+.saheli-emergency-btn:hover {
+  background: linear-gradient(135deg, #F87171 0%, #991B1B 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 0 0 6px rgba(239, 68, 68, 0.4), 0 0 40px rgba(239, 68, 68, 0.7);
+}
+
+.saheli-emergency-btn:active {
+  transform: translateY(0);
+}
+
+.saheli-emergency-btn--hero {
+  padding: var(--space-5) var(--space-6);
+  min-height: 80px;
+}
+
+.saheli-emergency-btn--compact {
+  padding: var(--space-3) var(--space-4);
+  min-height: 52px;
+}
+
+.saheli-emergency-btn__text-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.saheli-emergency-btn__title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-extrabold);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.saheli-emergency-btn__subtitle {
+  font-size: var(--font-size-xs);
+  opacity: 0.92;
+  font-weight: var(--font-weight-medium);
+}
+
+/* --------------------------------------------------------------------------
+   GUARDIAN CARD (.saheli-guardian-card)
+   -------------------------------------------------------------------------- */
+.saheli-guardian-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.saheli-guardian-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.saheli-guardian-card__avatar-col {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.saheli-guardian-card__avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-full);
+  background: rgba(56, 189, 248, 0.12);
+  color: var(--color-brand-primary);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.2);
+}
+
+.saheli-guardian-card__name-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.saheli-guardian-card__name {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
+
+.saheli-guardian-card__relationship {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.saheli-guardian-card__battery {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  background-color: var(--color-bg-surface-subtle);
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border-subtle);
+}
+
+.battery--good { color: var(--color-state-safe-text); }
+.battery--low { color: var(--color-state-emergency-text); }
+
+.saheli-guardian-card__details {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  border-top: 1px solid var(--color-border-subtle);
+  padding-top: var(--space-2);
+}
+
+.saheli-guardian-card__meta-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-state-safe-text);
+  font-weight: var(--font-weight-medium);
+}
+
+.saheli-guardian-card__status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-state-safe);
+  box-shadow: 0 0 6px var(--color-state-safe);
+}
+
+.saheli-guardian-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid var(--color-border-subtle);
+  padding-top: var(--space-3);
+}
+
+.saheli-guardian-card__phone {
+  font-size: var(--font-size-xs);
+  font-family: var(--font-family-mono);
+  color: var(--color-text-secondary);
+}
+
+.saheli-guardian-card__actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+/* --------------------------------------------------------------------------
+   SAFE PLACE CARD (.saheli-safe-place-card)
+   -------------------------------------------------------------------------- */
+.saheli-safe-place-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.saheli-safe-place-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.saheli-safe-place-card__title-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.saheli-safe-place-card__name {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
+
+.saheli-safe-place-card__category {
+  font-size: var(--font-size-xs);
+  color: var(--color-brand-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+.saheli-safe-place-card__distance-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background-color: rgba(56, 189, 248, 0.12);
+  color: var(--color-brand-primary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(56, 189, 248, 0.28);
+  flex-shrink: 0;
+}
+
+.saheli-safe-place-card__address {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  line-height: 1.4;
+}
+
+.saheli-safe-place-card__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.saheli-safe-place-card__hours {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--color-state-safe-text);
+  font-weight: var(--font-weight-medium);
+}
+
+.saheli-safe-place-card__features {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.saheli-safe-place-card__feature-chip {
+  font-size: 0.6875rem;
+  background-color: var(--color-bg-surface-subtle);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border-subtle);
+  padding: 2px 7px;
+  border-radius: var(--radius-sm);
+}
+
+.saheli-safe-place-card__footer {
+  margin-top: var(--space-1);
+}
+
+/* --------------------------------------------------------------------------
+   JOURNEY CARD (.saheli-journey-card)
+   -------------------------------------------------------------------------- */
+.saheli-journey-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  border-left: 4px solid var(--color-state-safe);
+}
+
+.saheli-journey-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.saheli-journey-card__status-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-1);
+}
+
+.saheli-journey-card__live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-state-safe);
+  box-shadow: 0 0 8px var(--color-state-safe);
+  animation: status-pulse 1.5s infinite;
+}
+
+.saheli-journey-card__live-text {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-state-safe-text);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.saheli-journey-card__title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
+
+.saheli-journey-card__eta {
+  text-align: right;
+}
+
+.saheli-journey-card__eta-val {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-extrabold);
+  color: var(--color-brand-primary);
+  display: block;
+}
+
+.saheli-journey-card__eta-label {
+  font-size: 0.6875rem;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.saheli-journey-card__destination-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-sm);
+  background-color: var(--color-bg-surface-subtle);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-subtle);
+}
+
+.dest-icon { color: var(--color-brand-primary); }
+.dest-label { color: var(--color-text-muted); font-weight: var(--font-weight-medium); }
+.dest-val { color: var(--color-text-primary); font-weight: var(--font-weight-semibold); }
+
+.saheli-journey-card__progress-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.saheli-journey-card__progress-track {
+  width: 100%;
+  height: 8px;
+  background-color: var(--color-bg-surface-muted);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.saheli-journey-card__progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #10B981, #34D399);
+  border-radius: var(--radius-full);
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+  transition: width 0.4s ease;
+}
+
+.saheli-journey-card__progress-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.saheli-journey-card__checkin-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  background-color: rgba(16, 185, 129, 0.08);
+  border: 1px solid var(--color-state-safe-border);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+}
+
+.saheli-journey-card__checkin-info {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-state-safe-text);
+}
+
+.saheli-journey-card__checkin-title {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+}
+
+.saheli-journey-card__checkin-desc {
+  font-size: 0.6875rem;
+  opacity: 0.9;
+}
+
+/* --------------------------------------------------------------------------
+   TIMELINE (.saheli-timeline)
+   -------------------------------------------------------------------------- */
+.saheli-timeline-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.timeline-header-icon {
+  color: var(--color-brand-primary);
+}
+
+.saheli-timeline-title {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
+
+.saheli-timeline {
+  display: flex;
+  flex-direction: column;
+}
+
+.saheli-timeline-item {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.saheli-timeline-gutter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 16px;
+  flex-shrink: 0;
+}
+
+.saheli-timeline-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: var(--radius-full);
+  margin-top: 5px;
+  flex-shrink: 0;
+  box-shadow: 0 0 8px currentColor;
+}
+
+.saheli-timeline-dot--safe { background-color: var(--color-state-safe); color: var(--color-state-safe); }
+.saheli-timeline-dot--caution { background-color: var(--color-state-caution); color: var(--color-state-caution); }
+.saheli-timeline-dot--threat { background-color: var(--color-state-threat); color: var(--color-state-threat); }
+.saheli-timeline-dot--emergency { background-color: var(--color-state-emergency); color: var(--color-state-emergency); }
+.saheli-timeline-dot--recovered { background-color: var(--color-state-recovered); color: var(--color-state-recovered); }
+
+.saheli-timeline-line {
+  width: 2px;
+  flex: 1;
+  background-color: var(--color-border-subtle);
+  margin: 4px 0;
+}
+
+.saheli-timeline-content {
+  padding-bottom: var(--space-4);
+  flex: 1;
+}
+
+.saheli-timeline-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2px;
+}
+
+.saheli-timeline-time {
+  font-size: var(--font-size-xs);
+  font-family: var(--font-family-mono);
+  color: var(--color-text-muted);
+}
+
+.saheli-timeline-event-title {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
+
+.saheli-timeline-event-desc {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  line-height: 1.4;
+  margin-top: 2px;
+}
+
+.saheli-timeline-empty {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  text-align: center;
+  padding: var(--space-4) 0;
+}
+
+/* --------------------------------------------------------------------------
+   MODAL (.saheli-modal) — DARK GLASS ELEVATION
+   -------------------------------------------------------------------------- */
+.saheli-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(4, 7, 14, 0.82);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+  z-index: 100;
+}
+
+.saheli-modal-content {
+  background: var(--color-bg-surface-elevated);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--color-border-subtle);
+  color: var(--color-text-primary);
+  width: 100%;
+  max-width: 520px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  max-height: 90vh;
+}
+
+.saheli-modal-content--sm { max-width: 420px; }
+.saheli-modal-content--lg { max-width: min(880px, 94vw); }
+
+.saheli-modal-header {
+  padding: var(--space-4) var(--space-5);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--color-border-subtle);
+  background: var(--color-bg-surface-subtle);
+}
+
+.saheli-modal-title {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
+
+.saheli-modal-close-btn {
+  background: transparent;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+}
+.saheli-modal-close-btn:hover {
+  background-color: var(--color-bg-surface-subtle);
+  color: var(--color-text-primary);
+}
+
+.saheli-modal-body {
+  padding: var(--space-5);
+  overflow-y: auto;
+}
+
+.saheli-modal-footer {
+  padding: var(--space-4) var(--space-5);
+  border-top: 1px solid var(--color-border-subtle);
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  background-color: var(--color-bg-surface-subtle);
+}
+
+/* --------------------------------------------------------------------------
+   TOAST (.saheli-toast)
+   -------------------------------------------------------------------------- */
+.saheli-toast-container {
+  position: fixed;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 90;
+  width: 90%;
+  max-width: 460px;
+  pointer-events: none;
+}
+
+.saheli-toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-bg-surface-elevated);
+  color: var(--color-text-primary);
+  box-shadow: var(--shadow-xl);
+  border: 1px solid var(--color-border-subtle);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  backdrop-filter: blur(12px);
+}
+
+.saheli-toast--info {
+  border-color: rgba(56, 189, 248, 0.35);
+  color: #38BDF8;
+  box-shadow: 0 0 20px rgba(56, 189, 248, 0.2);
+}
+.toast-icon--info { color: #38BDF8; }
+
+.saheli-toast--success {
+  border-color: rgba(16, 185, 129, 0.35);
+  color: #34D399;
+  background-color: rgba(16, 185, 129, 0.12);
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
+}
+.toast-icon--success { color: #10B981; }
+
+.saheli-toast--warning {
+  border-color: rgba(245, 158, 11, 0.35);
+  color: #FBBF24;
+  background-color: rgba(245, 158, 11, 0.12);
+  box-shadow: 0 0 20px rgba(245, 158, 11, 0.2);
+}
+.toast-icon--warning { color: #F59E0B; }
+
+.saheli-toast--danger {
+  border-color: rgba(239, 68, 68, 0.45);
+  color: #FCA5A5;
+  background-color: rgba(239, 68, 68, 0.18);
+  box-shadow: 0 0 25px rgba(239, 68, 68, 0.3);
+}
+.toast-icon--danger { color: #EF4444; }
+
+.saheli-toast__message {
+  flex: 1;
+}
+
+.saheli-toast__close {
+  background: transparent;
+  border: none;
+  color: currentColor;
+  opacity: 0.7;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+.saheli-toast__close:hover {
+  opacity: 1;
+}
+
+/* --------------------------------------------------------------------------
+   FORM CONTROLS (.saheli-input, .input-with-icon)
+   -------------------------------------------------------------------------- */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.input-with-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-icon {
+  position: absolute;
+  left: 12px;
+  color: var(--color-text-muted);
+  pointer-events: none;
+}
+
+.saheli-input {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 12px 0 36px;
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  outline: none;
+  transition: all var(--transition-fast);
+}
+
+.saheli-input:focus {
+  border-color: var(--color-brand-primary);
+  box-shadow: 0 0 0 3px var(--color-brand-subtle);
+  background-color: var(--color-bg-surface);
+}
+
+.saheli-input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.saheli-select {
+  cursor: pointer;
+}
+
+/* --------------------------------------------------------------------------
+   ACTIVE SAFEWALK (.saheli-active-safewalk)
+   -------------------------------------------------------------------------- */
+.saheli-active-safewalk {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  border-left: 4px solid var(--color-state-safe);
+}
+
+.active-safewalk__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.active-safewalk__pulse-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-state-safe);
+  box-shadow: 0 0 8px var(--color-state-safe);
+  animation: status-pulse 1.6s infinite ease-in-out;
+}
+
+.active-safewalk__label {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-extrabold);
+  letter-spacing: 0.06em;
+  color: var(--color-state-safe-text);
+  text-transform: uppercase;
+}
+
+.active-safewalk__status-chip {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.active-safewalk__route {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--color-bg-surface-subtle);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-subtle);
+}
+
+.active-safewalk__location {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.active-safewalk__loc-label {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.05em;
+}
+
+.active-safewalk__loc-val {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
+
+.active-safewalk__route-arrow {
+  color: var(--color-brand-primary);
+  display: flex;
+  align-items: center;
+}
+
+.active-safewalk__meta-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: var(--space-3);
+}
+
+.active-safewalk__meta-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  background-color: var(--color-bg-surface-subtle);
+  border: 1px solid var(--color-border-subtle);
+}
+
+.active-safewalk__meta-icon {
+  color: var(--color-brand-primary);
+  flex-shrink: 0;
+}
+
+.meta-sub {
+  display: block;
+  font-size: 0.6875rem;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  font-weight: var(--font-weight-semibold);
+}
+
+.meta-main {
+  display: block;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
+
+.active-safewalk__progress-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.active-safewalk__progress-header {
+  display: flex;
+  justify-content: space-between;
+}
+
+.active-safewalk__progress-track {
+  width: 100%;
+  height: 8px;
+  background-color: var(--color-bg-surface-muted);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.active-safewalk__progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #10B981, #34D399);
+  border-radius: var(--radius-full);
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);
+  transition: width 0.3s ease;
+}
+
+.active-safewalk__checkin-box {
+  background-color: rgba(16, 185, 129, 0.08);
+  border: 1px solid var(--color-state-safe-border);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+}
+
+.active-safewalk__actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+}
+
+@media (min-width: 640px) {
+  .active-safewalk__actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+  .active-safewalk__actions .emergency-action-btn {
+    grid-column: span 2;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   DASHBOARD SHELL LAYOUT (SIDEBAR + TOP HEADER)
+   -------------------------------------------------------------------------- */
+.dashboard-layout {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+  background-color: var(--color-bg-app);
+}
+
+.dashboard-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background-color: var(--color-bg-app);
+}
+
+.dashboard-content {
+  flex: 1;
+  padding: 1.5rem 2rem;
+  max-width: 1280px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+@media (max-width: 900px) {
+  .saheli-app-sidebar {
+    display: none !important;
+  }
+  .dashboard-content {
+    padding: 1rem;
+  }
+}

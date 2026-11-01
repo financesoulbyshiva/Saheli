@@ -1,0 +1,18 @@
+{
+  "name": "saheli-backend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "SAHELI backend REST API service for women safety telemetry and emergency incident logging",
+  "main": "src/server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node src/server.js",
+    "test": "node --test test/api.test.js",
+    "backup": "node src/db/backup.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.118.0",
+    "nodemailer": "^10.3.1"
+  }
+}

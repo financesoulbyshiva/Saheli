@@ -1,0 +1,218 @@
+/* ==========================================================================
+   SAHELI GLOBAL DESIGN SYSTEM — DUAL THEME TOKENS
+   Light Mode: TailGrids SaaSly Clean White & Soft Slate
+   Dark Mode: Deep Navy Charcoal SaaSly HUD (Comfortable, Zero Neon Glare)
+   ========================================================================== */
+
+:root,
+[data-theme="light"] {
+  /* Brand Identity — TailGrids Royal Blue & Trust Indigo */
+  --color-brand-primary: #3758F9;
+  --color-brand-primary-hover: #2646E5;
+  --color-brand-secondary: #4F46E5;
+  --color-brand-secondary-hover: #4338CA;
+  --color-brand-subtle: rgba(55, 88, 249, 0.08);
+  --color-brand-border: rgba(55, 88, 249, 0.22);
+  --color-brand-accent: #8B5CF6;
+
+  /* Safety State: SAFE */
+  --color-state-safe: #10B981;
+  --color-state-safe-dark: #059669;
+  --color-state-safe-bg: rgba(16, 185, 129, 0.08);
+  --color-state-safe-border: rgba(16, 185, 129, 0.24);
+  --color-state-safe-text: #059669;
+
+  /* Safety State: CAUTION */
+  --color-state-caution: #F59E0B;
+  --color-state-caution-dark: #D97706;
+  --color-state-caution-bg: rgba(245, 158, 11, 0.10);
+  --color-state-caution-border: rgba(245, 158, 11, 0.28);
+  --color-state-caution-text: #B45309;
+
+  /* Safety State: THREAT */
+  --color-state-threat: #F97316;
+  --color-state-threat-dark: #EA580C;
+  --color-state-threat-bg: rgba(249, 115, 22, 0.12);
+  --color-state-threat-border: rgba(249, 115, 22, 0.32);
+  --color-state-threat-text: #C2410C;
+
+  /* Safety State: EMERGENCY */
+  --color-state-emergency: #EF4444;
+  --color-state-emergency-dark: #DC2626;
+  --color-state-emergency-bg: rgba(239, 68, 68, 0.12);
+  --color-state-emergency-border: rgba(239, 68, 68, 0.38);
+  --color-state-emergency-text: #DC2626;
+
+  /* Safety State: RECOVERED */
+  --color-state-recovered: #06B6D4;
+  --color-state-recovered-dark: #0891B2;
+  --color-state-recovered-bg: rgba(6, 182, 212, 0.08);
+  --color-state-recovered-border: rgba(6, 182, 212, 0.24);
+  --color-state-recovered-text: #0E7490;
+
+  /* Light Canvas & Surface Layers */
+  --color-bg-app: #F8FAFC;                 /* Clean Slate-50 */
+  --color-bg-surface: #FFFFFF;             /* Pure White Card Base */
+  --color-bg-surface-elevated: #FFFFFF;    /* Dropdowns & Popovers */
+  --color-bg-surface-subtle: #F1F5F9;      /* Slate-100 Container */
+  --color-bg-surface-muted: #E2E8F0;       /* Slate-200 Container */
+
+  /* Neutral Text Hierarchy */
+  --color-text-primary: #0F172A;           /* Slate-900: Crisp Title */
+  --color-text-secondary: #475569;         /* Slate-600: Clean Body */
+  --color-text-muted: #64748B;             /* Slate-500: Helper / Timestamps */
+  --color-text-disabled: #94A3B8;          /* Slate-400 */
+  --color-text-inverse: #FFFFFF;
+
+  /* Subtle Borders */
+  --color-border-subtle: #E2E8F0;
+  --color-border-default: #CBD5E1;
+  --color-border-strong: #94A3B8;
+
+  /* Glassmorphism */
+  --color-glass-bg: rgba(255, 255, 255, 0.94);
+  --color-glass-border: rgba(226, 232, 240, 0.9);
+  --color-glass-dock: rgba(255, 255, 255, 0.96);
+  --blur-glass: 16px;
+
+  /* Soft Realistic Shadows */
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 14px -2px rgba(0, 0, 0, 0.06), 0 2px 6px -1px rgba(0, 0, 0, 0.03);
+  --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.06), 0 8px 10px -6px rgba(0, 0, 0, 0.03);
+  --shadow-xl: 0 20px 40px -15px rgba(55, 88, 249, 0.08), 0 0 1px rgba(0, 0, 0, 0.1);
+  --shadow-dock: 0 16px 36px -6px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(226, 232, 240, 0.8);
+  --shadow-emergency: 0 0 0 4px rgba(239, 68, 68, 0.25), 0 8px 24px rgba(239, 68, 68, 0.45);
+
+  /* Typography */
+  --font-family-base: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-family-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-md: 1.125rem;
+  --font-size-lg: 1.25rem;
+  --font-size-xl: 1.5rem;
+  --font-size-2xl: 1.875rem;
+  --font-size-3xl: 2.25rem;
+
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-extrabold: 800;
+
+  --line-height-tight: 1.25;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.65;
+
+  /* Spacing Scale */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+
+  /* Border Radii */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 28px;
+  --radius-full: 9999px;
+
+  /* Touch Targets */
+  --min-touch-target: 44px;
+  --emergency-touch-target: 64px;
+
+  /* Transitions */
+  --transition-fast: 150ms cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-normal: 250ms cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-smooth: 350ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ==========================================================================
+   DARK MODE TOKENS — PREMIUM NAVY CHARCOAL SPECIFICATION
+   Comfortable contrast, restrained accents, zero excessive neon glare.
+   ========================================================================== */
+[data-theme="dark"] {
+  /* Brand Identity — Controlled Cyan & Electric Indigo */
+  --color-brand-primary: #38BDF8;
+  --color-brand-primary-hover: #0EA5E9;
+  --color-brand-secondary: #6366F1;
+  --color-brand-secondary-hover: #4F46E5;
+  --color-brand-subtle: rgba(56, 189, 248, 0.10);
+  --color-brand-border: rgba(56, 189, 248, 0.28);
+  --color-brand-accent: #A855F7;
+
+  /* Safety State: SAFE */
+  --color-state-safe: #10B981;
+  --color-state-safe-dark: #059669;
+  --color-state-safe-bg: rgba(16, 185, 129, 0.12);
+  --color-state-safe-border: rgba(16, 185, 129, 0.32);
+  --color-state-safe-text: #34D399;
+
+  /* Safety State: CAUTION */
+  --color-state-caution: #F59E0B;
+  --color-state-caution-dark: #D97706;
+  --color-state-caution-bg: rgba(245, 158, 11, 0.14);
+  --color-state-caution-border: rgba(245, 158, 11, 0.35);
+  --color-state-caution-text: #FBBF24;
+
+  /* Safety State: THREAT */
+  --color-state-threat: #F97316;
+  --color-state-threat-dark: #EA580C;
+  --color-state-threat-bg: rgba(249, 115, 22, 0.16);
+  --color-state-threat-border: rgba(249, 115, 22, 0.40);
+  --color-state-threat-text: #FB923C;
+
+  /* Safety State: EMERGENCY */
+  --color-state-emergency: #EF4444;
+  --color-state-emergency-dark: #DC2626;
+  --color-state-emergency-bg: rgba(239, 68, 68, 0.20);
+  --color-state-emergency-border: rgba(239, 68, 68, 0.48);
+  --color-state-emergency-text: #FCA5A5;
+
+  /* Safety State: RECOVERED */
+  --color-state-recovered: #06B6D4;
+  --color-state-recovered-dark: #0891B2;
+  --color-state-recovered-bg: rgba(6, 182, 212, 0.12);
+  --color-state-recovered-border: rgba(6, 182, 212, 0.32);
+  --color-state-recovered-text: #67E8F9;
+
+  /* Deep Navy & Charcoal Differentiated Surface Layers */
+  --color-bg-app: #0B0F19;                 /* Deep Navy Canvas */
+  --color-bg-surface: #111827;             /* Charcoal Slate Base */
+  --color-bg-surface-elevated: #1F2937;    /* Elevated Modals & Dropdowns */
+  --color-bg-surface-subtle: #1E293B;      /* Secondary Container */
+  --color-bg-surface-muted: #334155;       /* Tertiary Inactive */
+
+  /* Readable Primary and Secondary Text */
+  --color-text-primary: #F8FAFC;           /* Slate-50: Crisp readable white */
+  --color-text-secondary: #94A3B8;         /* Slate-400: Clean secondary */
+  --color-text-muted: #64748B;             /* Slate-500: Helper / Timestamps */
+  --color-text-disabled: #475569;          /* Slate-600 */
+  --color-text-inverse: #0B0F19;
+
+  /* Subtle Borders for Consistent Contrast */
+  --color-border-subtle: rgba(255, 255, 255, 0.09);
+  --color-border-default: rgba(255, 255, 255, 0.16);
+  --color-border-strong: rgba(255, 255, 255, 0.28);
+
+  /* Glassmorphism in Dark Mode */
+  --color-glass-bg: rgba(17, 24, 39, 0.88);
+  --color-glass-border: rgba(255, 255, 255, 0.12);
+  --color-glass-dock: rgba(11, 15, 25, 0.92);
+
+  /* Dark Card Shadows */
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 14px -2px rgba(0, 0, 0, 0.5), 0 2px 6px -1px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.6), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
+  --shadow-xl: 0 20px 40px -15px rgba(0, 0, 0, 0.7);
+  --shadow-dock: 0 16px 36px -6px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.1);
+  --shadow-emergency: 0 0 0 4px rgba(239, 68, 68, 0.35), 0 8px 24px rgba(239, 68, 68, 0.55);
+}

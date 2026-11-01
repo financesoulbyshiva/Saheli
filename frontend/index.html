@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#070A12" />
+    <title>SAHELI — Smart Women Safety & Emergency Assistance Platform</title>
+    <meta
+      name="description"
+      content="SAHELI is a proactive women safety and emergency assistance platform. Intervening before emergencies through SafeWalk companion monitoring, trusted guardian alerts, and verified safe havens."
+    />
+    <meta name="keywords" content="women safety, emergency assistance, SafeWalk, SOS button, personal security, guardian network, safe havens" />
+    <meta name="author" content="SAHELI Engineering Team" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="SAHELI — Smart Women Safety Platform" />
+    <meta
+      property="og:description"
+      content="Safety before the emergency. Proactive journey monitoring, de-escalation tools, and verified safe places for women."
+    />
+    <meta property="og:image" content="/favicon.svg" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="SAHELI — Smart Women Safety Platform" />
+    <meta
+      name="twitter:description"
+      content="Safety before the emergency. Proactive companion monitoring and rapid crisis response."
+    />
+    <meta name="twitter:image" content="/favicon.svg" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <!-- Fintech SaaS & Cyber-Safety Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script>
+      (function() {
+        try {
+          var stored = localStorage.getItem('saheli_theme');
+          var theme = (stored === 'light' || stored === 'dark') ? stored : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+          document.documentElement.setAttribute('data-theme', theme);
+          if (theme === 'dark') {
+            document.documentElement.classList.add('dark');
+            document.documentElement.style.colorScheme = 'dark';
+          } else {
+            document.documentElement.classList.remove('dark');
+            document.documentElement.style.colorScheme = 'light';
+          }
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
