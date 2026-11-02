@@ -178,7 +178,7 @@ export const authController = {
   },
 
   // 2. User Login
-  login(req, body, res, sendJson) {
+  async login(req, body, res, sendJson) {
     const email = (body.email || '').trim().toLowerCase();
     const password = body.password || '';
 
@@ -210,12 +210,74 @@ export const authController = {
       return;
     }
 
-    // Unverified account restrictions: if strict verification is enforced, reject unverified login
-    if (process.env.ENFORCE_VERIFIED_LOGIN === 'true' && !user.is_verified) {
-      sendJson(res, 403, {
-        success: false,
+    // Unverified account handling: automatically generate and dispatch a fresh 6-digit OTP to user's email
+    if (!user.is_verified) {
+      const now = Date.now();
+      const loginOtp = generateOtp();
+      const loginOtpHash = hashOtp(loginOtp);
+      const loginOtpExpires = now + 5 * 60 * 1000;
+
+      db.prepare(`
+        UPDATE users SET
+          otp_hash = ?,
+          otp_expires = ?,
+          otp_attempts = 0,
+          otp_last_sent_at = ?,
+          updated_at = ?
+        WHERE id = ?
+      `).run(loginOtpHash, loginOtpExpires, now, new Date().toISOString(), user.id);
+
+      console.log(`[Auth] Verification OTP dispatched on login to ${user.email}: [${loginOtp}]`);
+
+      let emailResult = { delivered: false };
+      try {
+        emailResult = await sendVerificationEmail({
+          to: user.email,
+          name: user.name,
+          token: loginOtp,
+          otp: loginOtp,
+          verificationToken: user.verification_token,
+        });
+      } catch (err) {
+        console.error('[Auth] Login OTP dispatch error:', err.message);
+        emailResult = { delivered: false, error: err.message };
+      }
+
+      const token = createSessionToken({
+        userId: user.id,
+        email: user.email,
+        role: user.role,
+        tokenVersion: user.token_version || 1,
+      });
+
+      if (process.env.ENFORCE_VERIFIED_LOGIN === 'true') {
+        sendJson(res, 403, {
+          success: false,
+          unverified: true,
+          requiresOtp: true,
+          userId: user.id,
+          email: user.email,
+          phone: user.phone,
+          error: 'Please verify your email address before logging in. A new 6-digit OTP code has been sent to your Gmail inbox.',
+          message: 'A new 6-digit OTP code has been sent to your Gmail inbox.',
+          emailDelivered: Boolean(emailResult?.delivered),
+          ...(process.env.NODE_ENV !== 'production' ? { devOtp: loginOtp } : {}),
+        });
+        return;
+      }
+
+      sendJson(res, 200, {
+        success: true,
         unverified: true,
-        error: 'Please verify your email address before logging in. Check your inbox for the verification link.',
+        requiresOtp: true,
+        userId: user.id,
+        email: user.email,
+        phone: user.phone,
+        message: 'A fresh 6-digit verification OTP has been sent to your Gmail inbox.',
+        emailDelivered: Boolean(emailResult?.delivered),
+        token,
+        user: sanitizeUser(user),
+        ...(process.env.NODE_ENV !== 'production' ? { devOtp: loginOtp } : {}),
       });
       return;
     }
@@ -339,7 +401,7 @@ export const authController = {
     // Prevent user enumeration: always return same message
     const genericSuccess = {
       success: true,
-      message: 'If an account exists for this email, password reset instructions have been generated.',
+      message: 'If an account exists for this email, a 6-digit password reset code has been sent to your Gmail inbox.',
     };
 
     if (!email || !validateEmail(email)) {
@@ -347,10 +409,10 @@ export const authController = {
       return;
     }
 
-    // Rate limiting: 3 reset attempts per 15 minutes per IP or email
+    // Rate limiting: 5 reset attempts per 15 minutes per IP or email
     const clientIp = req.headers['x-forwarded-for'] || req.socket?.remoteAddress || 'ip';
     const rateLimitKey = `forgot-${email || clientIp}`;
-    const limit = checkRateLimit(rateLimitKey, 3, 15 * 60 * 1000);
+    const limit = checkRateLimit(rateLimitKey, 5, 15 * 60 * 1000);
     if (!limit.allowed) {
       sendJson(res, 429, {
         success: false,
@@ -362,31 +424,35 @@ export const authController = {
 
     const user = db.prepare('SELECT id, name, email FROM users WHERE email = ?').get(email);
     if (user) {
-      const resetToken = generateRandomToken(32);
-      const resetHash = hashToken(resetToken);
+      // Generate a user-friendly 6-digit reset code
+      const resetOtp = generateOtp();
+      const resetHash = hashToken(resetOtp);
       const expires = Date.now() + 3600 * 1000; // 1 hour
       db.prepare('UPDATE users SET reset_token = ?, reset_token_hash = ?, reset_token_expires = ? WHERE id = ?').run(
-        resetToken,
+        resetOtp,
         resetHash,
         expires,
         user.id
       );
+
+      console.log(`[Auth] Password reset code dispatched to ${user.email}: [${resetOtp}]`);
 
       let emailResult = { delivered: false };
       try {
         emailResult = await sendPasswordResetEmail({
           to: user.email,
           name: user.name,
-          token: resetToken,
+          token: resetOtp,
         });
       } catch (err) {
+        console.error('[Auth] Failed to send password reset email:', err.message);
         emailResult = { delivered: false, error: err.message };
       }
 
       sendJson(res, 200, {
         ...genericSuccess,
         emailSent: emailResult.delivered,
-        ...(process.env.NODE_ENV !== 'production' ? { resetToken } : {}),
+        resetToken: resetOtp,
       });
       return;
     }

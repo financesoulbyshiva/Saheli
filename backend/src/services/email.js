@@ -424,38 +424,102 @@ export async function verifySmtpConnection() {
 /**
  * Deliver Password Reset Email
  */
-export async function sendPasswordResetEmail({ to, name, token }) {
+export async function sendPasswordResetEmail({ to, name, token, resetToken }) {
   const cfg = getEmailConfig();
-  const resetUrl = `${cfg.appUrl}/?reset=${encodeURIComponent(token)}`;
+  const resetCode = String(token || resetToken || '').trim();
+  const recipientName = name || 'there';
+  const isLocalUrl = !cfg.appUrl || cfg.appUrl.includes('localhost') || cfg.appUrl.includes('127.0.0.1');
+  const resetUrl = `${cfg.appUrl}/?reset=${encodeURIComponent(resetCode)}`;
 
-  const subject = 'Reset Your SAHELI Password';
-  const text = `Hello ${name || 'there'},\n\nA password reset request was received for your SAHELI account.\n\nTo reset your password, click the link below:\n${resetUrl}\n\nOr enter this reset token in the app:\n${token}\n\nThis reset link expires in 1 hour.\n\nIf you did not request this, please secure your account immediately.\n\nSAHELI Safety Team`;
+  const subject = `Your SAHELI Password Reset Code: ${resetCode}`;
+
+  const text = isLocalUrl
+    ? `Hello ${recipientName},\n\nA password reset request was received for your SAHELI account.\n\nYour 6-Digit Password Reset Code is:\n${resetCode}\n\nThis code expires in 1 hour. Enter this code in the SAHELI app to choose a new password.\n\nIf you did not request this, please secure your account immediately.\n\nStay safe,\nSAHELI Security Team`
+    : `Hello ${recipientName},\n\nA password reset request was received for your SAHELI account.\n\nYour 6-Digit Password Reset Code is:\n${resetCode}\n\nThis code expires in 1 hour. Enter this code in the SAHELI app or open this link in your browser:\n${resetUrl}\n\nIf you did not request this, please secure your account immediately.\n\nStay safe,\nSAHELI Security Team`;
+
+  const actionSectionHtml = isLocalUrl
+    ? `
+        <div style="background: #EEF2FF; border: 1px solid #C7D2FE; border-radius: 10px; padding: 14px 18px; margin: 24px 0 16px 0; text-align: center;">
+          <p style="margin: 0; font-size: 13px; color: #3730A3; font-weight: 600;">
+            Enter this 6-digit code in the SAHELI password reset screen to set your new password immediately.
+          </p>
+        </div>
+      `
+    : `
+        <div style="text-align: center; margin: 28px 0 16px 0;">
+          <a href="${resetUrl}" style="display: inline-block; padding: 13px 32px; background-color: #3758F9; color: #FFFFFF; text-decoration: none; font-size: 14px; font-weight: 700; border-radius: 9999px; box-shadow: 0 4px 14px rgba(55, 88, 249, 0.35);">
+            Reset Password Directly
+          </a>
+        </div>
+      `;
+
+  const footerLinkHtml = isLocalUrl
+    ? `© 2026 SAHELI Platform • Smart Women Safety & Emergency Assistance`
+    : `© 2026 SAHELI Platform • Smart Women Safety & Emergency Assistance<br>Direct reset link: <a href="${resetUrl}" style="color: #3758F9; text-decoration: none;">${resetUrl}</a>`;
 
   const html = `
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${subject}</title>
 </head>
-<body style="margin: 0; padding: 24px; background-color: #F8FAFC; font-family: sans-serif; color: #0F172A;">
-  <div style="max-width: 520px; margin: 0 auto; background: #FFFFFF; border-radius: 12px; border: 1px solid #E2E8F0; padding: 32px;">
-    <h2 style="color: #0F172A; margin: 0 0 16px 0;">Reset Your Password</h2>
-    <p style="color: #475569; font-size: 14px; line-height: 1.6;">
-      Hello <strong>${name || 'there'}</strong>, a request was received to reset your SAHELI account password.
-    </p>
-    <div style="text-align: center; margin: 24px 0;">
-      <a href="${resetUrl}" style="display: inline-block; padding: 12px 28px; background-color: #3758F9; color: #FFFFFF; text-decoration: none; font-weight: 700; border-radius: 8px;">
-        Reset Password
-      </a>
-    </div>
-    <div style="background-color: #F1F5F9; padding: 12px; border-radius: 6px; font-size: 12px; text-align: center;">
-      Reset Token: <code>${token}</code>
-    </div>
-    <p style="color: #64748B; font-size: 12px; margin-top: 24px;">
-      This link is valid for 1 hour. If you did not make this request, please contact safety support.
-    </p>
-  </div>
+<body style="margin: 0; padding: 24px; background-color: #F8FAFC; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #0F172A;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width: 560px; margin: 0 auto; background-color: #FFFFFF; border-radius: 16px; border: 1px solid #E2E8F0; overflow: hidden; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);">
+    <!-- Header -->
+    <tr>
+      <td style="padding: 32px 32px 24px 32px; background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%); text-align: center;">
+        <div style="display: inline-block; width: 48px; height: 48px; border-radius: 12px; background: rgba(55, 88, 249, 0.2); border: 1px solid rgba(55, 88, 249, 0.4); line-height: 48px; font-size: 24px;">
+          🔑
+        </div>
+        <h1 style="margin: 12px 0 4px 0; color: #FFFFFF; font-size: 22px; font-weight: 800; letter-spacing: -0.02em;">
+          SAHELI
+        </h1>
+        <p style="margin: 0; color: #94A3B8; font-size: 13px; font-weight: 500;">
+          Password Reset Verification
+        </p>
+      </td>
+    </tr>
+
+    <!-- Body -->
+    <tr>
+      <td style="padding: 32px;">
+        <h2 style="margin: 0 0 16px 0; font-size: 18px; font-weight: 700; color: #0F172A;">
+          Reset Your Password
+        </h2>
+        <p style="margin: 0 0 20px 0; font-size: 14px; line-height: 1.6; color: #475569;">
+          Hello <strong>${recipientName}</strong>, a request was received to reset your SAHELI account password. Please enter the following 6-digit reset code in the app:
+        </p>
+
+        <!-- Big Bold OTP Code Box -->
+        <div style="background: #F8FAFC; border: 2px dashed #3758F9; border-radius: 12px; padding: 20px; margin: 24px 0; text-align: center;">
+          <div style="font-size: 12px; font-weight: 700; color: #64748B; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px;">
+            Your 6-Digit Password Reset Code
+          </div>
+          <div style="font-size: 38px; font-weight: 800; color: #1E293B; letter-spacing: 0.35em; font-family: 'Courier New', Courier, monospace; margin: 6px 0;">
+            ${resetCode}
+          </div>
+          <div style="font-size: 12px; color: #94A3B8; margin-top: 6px;">
+            Expires in <strong>1 hour</strong> • Single-use security code
+          </div>
+        </div>
+
+        ${actionSectionHtml}
+
+        <p style="margin: 24px 0 0 0; font-size: 12px; line-height: 1.5; color: #64748B; text-align: center;">
+          If you did not request this password reset, please secure your account or ignore this message.
+        </p>
+      </td>
+    </tr>
+
+    <!-- Footer -->
+    <tr>
+      <td style="padding: 20px 32px; background-color: #F8FAFC; border-top: 1px solid #E2E8F0; text-align: center; font-size: 12px; color: #94A3B8;">
+        ${footerLinkHtml}
+      </td>
+    </tr>
+  </table>
 </body>
 </html>
   `;
@@ -465,5 +529,6 @@ export async function sendPasswordResetEmail({ to, name, token }) {
     subject,
     html,
     text,
+    otp: resetCode,
   });
 }

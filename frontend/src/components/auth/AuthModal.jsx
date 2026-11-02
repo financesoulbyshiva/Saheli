@@ -255,9 +255,13 @@ export function AuthModal({ isOpen, onClose, initialView = 'login', onOpenLegal,
         // Detect account-disabled or pending-verification states
         if (result.accountDisabled) {
           switchView('account-disabled');
-        } else if (result.pendingVerification) {
+        } else if (result.pendingVerification || result.unverified) {
           setOtpTargetEmail(email);
-          switchView('pending-verification');
+          if (result.userId) setOtpUserId(result.userId);
+          if (result.user?.id) setOtpUserId(result.user.id);
+          setResendCooldown(60);
+          showToast('Verification code sent! Please check your Gmail inbox.', 'info');
+          switchView('verify');
         } else {
           setError(result.error || 'Invalid credentials');
         }
@@ -379,11 +383,12 @@ export function AuthModal({ isOpen, onClose, initialView = 'login', onOpenLegal,
     setLoading(true);
     try {
       const result = await forgotPassword(email);
-      setSuccessMsg(result.message || 'If an account exists, reset instructions have been generated.');
+      setSuccessMsg(result.message || 'A 6-digit password reset code has been sent to your Gmail inbox.');
+      showToast('Reset code sent! Please check your Gmail inbox.', 'success');
       if (result.resetToken) {
         setTokenInput(result.resetToken);
-        switchView('reset');
       }
+      switchView('reset');
     } catch (err) {
       setError(err.message || 'Request failed. Please try again.');
     } finally {
@@ -790,12 +795,12 @@ export function AuthModal({ isOpen, onClose, initialView = 'login', onOpenLegal,
             {backToLogin}
 
             <div className="form-group">
-              <label className="label-text" htmlFor="reset-token">Reset Token</label>
+              <label className="label-text" htmlFor="reset-token">Password Reset Code / Token</label>
               <div className="input-with-icon">
                 <KeyRound size={16} className="input-icon" />
                 <input
                   id="reset-token" type="text" className="saheli-input"
-                  placeholder="Paste 32-character reset token"
+                  placeholder="Enter 6-digit code or reset token from email"
                   value={tokenInput} onChange={(e) => setTokenInput(e.target.value)}
                   required autoComplete="off"
                 />

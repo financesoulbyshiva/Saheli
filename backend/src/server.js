@@ -173,7 +173,7 @@ export async function handleRequest(req, res) {
 
     if (pathname === '/api/auth/login' && method === 'POST') {
       const body = await parseJsonBody(req);
-      authController.login(req, body, res, sendJson);
+      await authController.login(req, body, res, sendJson);
       return;
     }
 

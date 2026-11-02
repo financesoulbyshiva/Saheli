@@ -429,8 +429,11 @@ export function SafetyProvider({ children }) {
         return {
           success: false,
           pendingVerification: true,
+          unverified: true,
+          userId: data.userId || data.user?.id,
           user: data.user,
-          error: 'Please verify your email address to access your SAHELI safety features.',
+          message: data.message,
+          error: data.message || 'Please verify your email address to access your SAHELI safety features.',
         };
       }
       localStorage.setItem(LOCAL_STORAGE_KEY_TOKEN, data.token);
@@ -445,6 +448,9 @@ export function SafetyProvider({ children }) {
       error: data.error || 'Login failed',
       accountDisabled: res.status === 403 && isSuspended,
       pendingVerification: isUnverified,
+      unverified: isUnverified,
+      userId: data.userId,
+      user: data.user,
     };
   }, []);
 
