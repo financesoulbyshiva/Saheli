@@ -182,7 +182,7 @@ async function sendViaSMTP({ from, to, subject, html, text, smtpConfig, otp }) {
 
   // For Gmail, ensure sender address matches authenticated account
   const effectiveFrom = isGmail || !from || from.includes('onboarding@resend.dev')
-    ? `"SAHELI Safety" <${smtpConfig.user}>`
+    ? `"SAHELI" <${smtpConfig.user}>`
     : from;
 
   try {
@@ -193,13 +193,9 @@ async function sendViaSMTP({ from, to, subject, html, text, smtpConfig, otp }) {
       subject,
       html,
       text,
-      priority: 'high',
       headers: {
-        'X-Priority': '1',
-        'Importance': 'high',
-        'X-MSMail-Priority': 'High',
-        'X-Mailer': 'SAHELI-Platform-Mailer',
-        'X-Entity-Ref-ID': Date.now().toString(),
+        'Auto-Submitted': 'auto-generated',
+        'X-Auto-Response-Suppress': 'OOF, AutoReply',
       },
     });
     console.log(`[EmailService] OTP Email successfully delivered to ${to} via SMTP (MessageId: ${info.messageId})`);
@@ -291,7 +287,7 @@ export async function sendVerificationEmail({ to, name, token, otp, verification
   const isLocalUrl = !cfg.appUrl || cfg.appUrl.includes('localhost') || cfg.appUrl.includes('127.0.0.1');
   const verifyUrl = `${cfg.appUrl}/?verify=${encodeURIComponent(otpCode)}`;
 
-  const subject = `Your SAHELI Verification Code: ${otpCode}`;
+  const subject = `${otpCode} is your SAHELI verification code`;
 
   // When testing locally, avoid sending unencrypted localhost URLs to prevent
   // major spam filters (Gmail, Yahoo, Outlook) from flagging as phishing.
@@ -332,8 +328,8 @@ export async function sendVerificationEmail({ to, name, token, otp, verification
     <!-- Header -->
     <tr>
       <td style="padding: 32px 32px 24px 32px; background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%); text-align: center;">
-        <div style="display: inline-block; width: 48px; height: 48px; border-radius: 12px; background: rgba(55, 88, 249, 0.2); border: 1px solid rgba(55, 88, 249, 0.4); line-height: 48px; font-size: 24px;">
-          🛡️
+        <div style="display: inline-block; width: 44px; height: 44px; border-radius: 12px; background: rgba(55, 88, 249, 0.25); border: 1px solid rgba(55, 88, 249, 0.5); line-height: 44px; text-align: center; color: #FFFFFF; font-weight: 800; font-size: 20px;">
+          S
         </div>
         <h1 style="margin: 12px 0 4px 0; color: #FFFFFF; font-size: 22px; font-weight: 800; letter-spacing: -0.02em;">
           SAHELI
@@ -431,7 +427,7 @@ export async function sendPasswordResetEmail({ to, name, token, resetToken }) {
   const isLocalUrl = !cfg.appUrl || cfg.appUrl.includes('localhost') || cfg.appUrl.includes('127.0.0.1');
   const resetUrl = `${cfg.appUrl}/?reset=${encodeURIComponent(resetCode)}`;
 
-  const subject = `Your SAHELI Password Reset Code: ${resetCode}`;
+  const subject = `${resetCode} is your SAHELI password reset code`;
 
   const text = isLocalUrl
     ? `Hello ${recipientName},\n\nA password reset request was received for your SAHELI account.\n\nYour 6-Digit Password Reset Code is:\n${resetCode}\n\nThis code expires in 1 hour. Enter this code in the SAHELI app to choose a new password.\n\nIf you did not request this, please secure your account immediately.\n\nStay safe,\nSAHELI Security Team`
@@ -470,8 +466,8 @@ export async function sendPasswordResetEmail({ to, name, token, resetToken }) {
     <!-- Header -->
     <tr>
       <td style="padding: 32px 32px 24px 32px; background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%); text-align: center;">
-        <div style="display: inline-block; width: 48px; height: 48px; border-radius: 12px; background: rgba(55, 88, 249, 0.2); border: 1px solid rgba(55, 88, 249, 0.4); line-height: 48px; font-size: 24px;">
-          🔑
+        <div style="display: inline-block; width: 44px; height: 44px; border-radius: 12px; background: rgba(55, 88, 249, 0.25); border: 1px solid rgba(55, 88, 249, 0.5); line-height: 44px; text-align: center; color: #FFFFFF; font-weight: 800; font-size: 20px;">
+          S
         </div>
         <h1 style="margin: 12px 0 4px 0; color: #FFFFFF; font-size: 22px; font-weight: 800; letter-spacing: -0.02em;">
           SAHELI

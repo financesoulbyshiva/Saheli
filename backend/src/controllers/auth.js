@@ -76,9 +76,68 @@ export const authController = {
       return;
     }
 
+    const isTestMode = process.env.NODE_ENV === 'test' || process.env.SAHELI_OTP_TEST_MODE === 'true';
+
     // Check if user already exists
-    const existing = db.prepare('SELECT id FROM users WHERE email = ?').get(email);
+    const existing = db.prepare('SELECT id, is_verified, name, verification_token FROM users WHERE email = ?').get(email);
     if (existing) {
+      if (existing.is_verified === 0) {
+        // Account exists but has not completed OTP verification.
+        // Update credentials and dispatch a fresh 6-digit verification code while preserving existing verification_token.
+        const freshOtp = generateOtp();
+        const freshOtpHashed = hashOtp(freshOtp);
+        const freshOtpExpires = Date.now() + 5 * 60 * 1000;
+
+        const { salt: newSalt, hash: newHash } = hashPassword(password);
+        const newPinHash = hashPin(emergencyPin);
+
+        db.prepare(`
+          UPDATE users
+          SET name = ?, phone = ?, password_hash = ?, salt = ?, emergency_pin_hash = ?,
+              otp_hash = ?, otp_expires = ?, otp_attempts = 0, otp_last_sent_at = ?,
+              updated_at = ?
+          WHERE id = ?
+        `).run(
+          name, cleanPhone, newHash, newSalt, newPinHash,
+          freshOtpHashed, freshOtpExpires, Date.now(),
+          new Date().toISOString(), existing.id
+        );
+
+        let emailResult = { delivered: false };
+        try {
+          emailResult = await sendVerificationEmail({
+            to: email,
+            name,
+            token: freshOtp,
+            otp: freshOtp,
+            verificationToken: existing.verification_token,
+          });
+        } catch (err) {
+          console.error('[Auth] Re-registration OTP dispatch error:', err.message);
+          emailResult = { delivered: false, error: err.message };
+        }
+
+        const emailDelivered = Boolean(emailResult?.delivered);
+        const emailNotice = emailDelivered
+          ? 'An account was pending verification. A fresh 6-digit verification code has been dispatched to your Gmail inbox.'
+          : 'Account updated. If the email does not appear in your inbox shortly, please check your spam folder or click Resend.';
+
+        sendJson(res, 400, {
+          success: false,
+          unverified: true,
+          requiresOtp: true,
+          userId: existing.id,
+          email,
+          phone: cleanPhone,
+          emailDelivered,
+          emailError: emailResult?.error || null,
+          error: emailNotice,
+          message: emailNotice,
+          ...(isTestMode ? { devOtp: freshOtp, verificationToken: existing.verification_token } : {}),
+        });
+        return;
+      }
+
       sendJson(res, 400, {
         success: false,
         error: 'An account with this email already exists or is unavailable.',
@@ -156,7 +215,6 @@ export const authController = {
       emailResult = { delivered: false, error: err.message };
     }
 
-    const isTestMode = process.env.NODE_ENV === 'test' || process.env.SAHELI_OTP_TEST_MODE === 'true';
     const emailDelivered = Boolean(emailResult?.delivered);
     const emailNotice = emailDelivered
       ? 'A 6-digit verification code has been dispatched to your email address.'

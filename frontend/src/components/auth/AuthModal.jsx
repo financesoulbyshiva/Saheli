@@ -296,10 +296,18 @@ export function AuthModal({ isOpen, onClose, initialView = 'login', onOpenLegal,
         terms_accepted: true, terms_version: 'v2.0',
       });
       if (result.success) {
-        showToast('Account created! Please verify your email with the 6-digit OTP.', 'success');
+        showToast('Account created! Please check your Gmail inbox for your 6-digit verification code.', 'success');
         setOtpTargetPhone(phone);
         setOtpTargetEmail(email);
         if (result.user?.id) setOtpUserId(result.user.id);
+        setResendCooldown(60);
+        setOtpInput('');
+        switchView('verify');
+      } else if (result.unverified || result.requiresOtp) {
+        showToast(result.message || 'Account already created! A fresh verification code was sent to your Gmail inbox.', 'info');
+        setOtpTargetPhone(phone);
+        setOtpTargetEmail(email);
+        if (result.userId) setOtpUserId(result.userId);
         setResendCooldown(60);
         setOtpInput('');
         switchView('verify');
@@ -853,9 +861,12 @@ export function AuthModal({ isOpen, onClose, initialView = 'login', onOpenLegal,
               color: 'var(--color-text-secondary)',
               lineHeight: 1.45,
             }}>
-              <ShieldCheck size={20} style={{ color: 'var(--color-brand-primary)', flexShrink: 0 }} />
+              <ShieldCheck size={22} style={{ color: 'var(--color-brand-primary)', flexShrink: 0 }} />
               <div>
-                Please check your <strong>Gmail inbox</strong> (or Spam folder) for your 6-digit verification code and enter it below.
+                Please check your <strong>Gmail inbox</strong> for your 6-digit verification code and enter it below.
+                <div style={{ fontSize: '0.75rem', marginTop: '4px', color: 'var(--color-text-muted)' }}>
+                  Tip: If it doesn't appear in your Primary inbox within 30 seconds, please check your <strong>Spam / Junk</strong> folder or click Resend.
+                </div>
               </div>
             </div>
 

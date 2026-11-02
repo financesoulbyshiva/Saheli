@@ -491,7 +491,18 @@ export function SafetyProvider({ children }) {
         verificationToken: data.verificationToken,
       };
     }
-    return { success: false, error: data.error || 'Registration failed' };
+    return {
+      success: false,
+      error: data.error || 'Registration failed',
+      unverified: Boolean(data.unverified),
+      requiresOtp: Boolean(data.requiresOtp),
+      userId: data.userId,
+      email: data.email || userData.email,
+      phone: data.phone || userData.phone,
+      emailDelivered: data.emailDelivered,
+      emailError: data.emailError,
+      message: data.message,
+    };
   }, []);
 
   const verifyOtp = useCallback(async ({ userId, phone, email, otp, name, emergencyPin }) => {
