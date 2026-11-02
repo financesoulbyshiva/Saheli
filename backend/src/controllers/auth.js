@@ -156,11 +156,11 @@ export const authController = {
       emailResult = { delivered: false, error: err.message };
     }
 
-    const isDevelopment = process.env.NODE_ENV !== 'production' || process.env.SAHELI_OTP_TEST_MODE === 'true';
+    const isTestMode = process.env.NODE_ENV === 'test' || process.env.SAHELI_OTP_TEST_MODE === 'true';
     const emailDelivered = Boolean(emailResult?.delivered);
     const emailNotice = emailDelivered
       ? 'A 6-digit verification code has been dispatched to your email address.'
-      : `Email service notice: ${emailResult?.error || 'could not deliver to inbox'}. Active code: [${otp}]`;
+      : (isTestMode ? `Email service notice: ${emailResult?.error || 'could not deliver to inbox'}. Active code: [${otp}]` : 'A 6-digit verification code has been dispatched to your email address. Please check your inbox.');
 
     sendJson(res, 201, {
       success: true,
@@ -173,7 +173,7 @@ export const authController = {
       emailDelivered,
       emailError: emailResult?.error || null,
       supabaseConfigured: emailResult.configured !== false,
-      ...(isDevelopment || !emailDelivered ? { devOtp: otp, verificationToken } : {}),
+      ...(isTestMode ? { devOtp: otp, verificationToken } : {}),
     });
   },
 
@@ -261,7 +261,7 @@ export const authController = {
           error: 'Please verify your email address before logging in. A new 6-digit OTP code has been sent to your Gmail inbox.',
           message: 'A new 6-digit OTP code has been sent to your Gmail inbox.',
           emailDelivered: Boolean(emailResult?.delivered),
-          ...(process.env.NODE_ENV !== 'production' ? { devOtp: loginOtp } : {}),
+          ...(process.env.NODE_ENV === 'test' || process.env.SAHELI_OTP_TEST_MODE === 'true' ? { devOtp: loginOtp } : {}),
         });
         return;
       }
@@ -277,7 +277,7 @@ export const authController = {
         emailDelivered: Boolean(emailResult?.delivered),
         token,
         user: sanitizeUser(user),
-        ...(process.env.NODE_ENV !== 'production' ? { devOtp: loginOtp } : {}),
+        ...(process.env.NODE_ENV === 'test' || process.env.SAHELI_OTP_TEST_MODE === 'true' ? { devOtp: loginOtp } : {}),
       });
       return;
     }
@@ -452,7 +452,7 @@ export const authController = {
       sendJson(res, 200, {
         ...genericSuccess,
         emailSent: emailResult.delivered,
-        resetToken: resetOtp,
+        ...(process.env.NODE_ENV === 'test' || process.env.SAHELI_OTP_TEST_MODE === 'true' ? { resetToken: resetOtp } : {}),
       });
       return;
     }
@@ -856,17 +856,17 @@ export const authController = {
       emailResult = { delivered: false, error: err.message };
     }
 
-    const isDevelopment = process.env.NODE_ENV !== 'production' || process.env.SAHELI_OTP_TEST_MODE === 'true';
+    const isTestMode = process.env.NODE_ENV === 'test' || process.env.SAHELI_OTP_TEST_MODE === 'true';
     const emailDelivered = Boolean(emailResult?.delivered);
 
     sendJson(res, 200, {
       success: true,
       message: emailDelivered
         ? 'A fresh 6-digit verification code has been dispatched to your email address.'
-        : `Email service notice: ${emailResult?.error || 'could not deliver to inbox'}. Active code: [${newOtp}]`,
+        : (isTestMode ? `Email service notice: ${emailResult?.error || 'could not deliver to inbox'}. Active code: [${newOtp}]` : 'A fresh 6-digit verification code has been dispatched to your email address. Please check your inbox.'),
       emailDelivered,
       emailError: emailResult?.error || null,
-      ...(isDevelopment || !emailDelivered ? { devOtp: newOtp } : {}),
+      ...(isTestMode ? { devOtp: newOtp } : {}),
     });
   },
 

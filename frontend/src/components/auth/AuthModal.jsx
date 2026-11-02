@@ -194,7 +194,6 @@ export function AuthModal({ isOpen, onClose, initialView = 'login', onOpenLegal,
   const [otpTargetEmail, setOtpTargetEmail] = useState('');
   const [otpUserId, setOtpUserId] = useState(null);
   const [resendCooldown, setResendCooldown] = useState(0);
-  const [codeNotice, setCodeNotice] = useState(null);
 
   // 60-Second Cooldown Timer for OTP Resends
   useEffect(() => {
@@ -221,7 +220,7 @@ export function AuthModal({ isOpen, onClose, initialView = 'login', onOpenLegal,
     setTokenInput(''); setTermsAccepted(false);
     setEmergencyPin(''); setMarketingConsent(false);
     setOtpInput(''); setOtpTargetPhone(''); setOtpTargetEmail('');
-    setOtpUserId(null); setCodeNotice(null);
+    setOtpUserId(null);
     setError(null); setSuccessMsg(null); setLoading(false);
   }, []);
 
@@ -301,7 +300,6 @@ export function AuthModal({ isOpen, onClose, initialView = 'login', onOpenLegal,
         setOtpTargetPhone(phone);
         setOtpTargetEmail(email);
         if (result.user?.id) setOtpUserId(result.user.id);
-        if (result.devOtp) setCodeNotice(result.devOtp);
         setResendCooldown(60);
         setOtpInput('');
         switchView('verify');
@@ -363,7 +361,6 @@ export function AuthModal({ isOpen, onClose, initialView = 'login', onOpenLegal,
       if (result.success) {
         setResendCooldown(result.retryAfterSeconds || 60);
         setSuccessMsg(result.message || 'A fresh verification code was sent to your email.');
-        if (result.devOtp) setCodeNotice(result.devOtp);
       } else {
         if (result.retryAfterSeconds) {
           setResendCooldown(result.retryAfterSeconds);
@@ -385,9 +382,7 @@ export function AuthModal({ isOpen, onClose, initialView = 'login', onOpenLegal,
       const result = await forgotPassword(email);
       setSuccessMsg(result.message || 'A 6-digit password reset code has been sent to your Gmail inbox.');
       showToast('Reset code sent! Please check your Gmail inbox.', 'success');
-      if (result.resetToken) {
-        setTokenInput(result.resetToken);
-      }
+      setTokenInput('');
       switchView('reset');
     } catch (err) {
       setError(err.message || 'Request failed. Please try again.');
@@ -846,42 +841,23 @@ export function AuthModal({ isOpen, onClose, initialView = 'login', onOpenLegal,
               </strong>
             </div>
 
-            {codeNotice && (
-              <div style={{
-                padding: '0.75rem',
-                backgroundColor: 'rgba(55, 88, 249, 0.08)',
-                border: '1px solid rgba(55, 88, 249, 0.25)',
-                borderRadius: '8px',
-                fontSize: '0.8125rem',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                gap: '8px',
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <ShieldCheck size={16} style={{ color: 'var(--color-brand-primary)', flexShrink: 0 }} />
-                  <span>
-                    Active OTP: <strong style={{ letterSpacing: '0.15em', fontFamily: 'monospace', color: 'var(--color-text-primary)' }}>{codeNotice}</strong>
-                  </span>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setOtpInput(codeNotice)}
-                  style={{
-                    padding: '3px 10px',
-                    fontSize: '0.75rem',
-                    fontWeight: 600,
-                    backgroundColor: 'var(--color-brand-primary)',
-                    color: '#FFFFFF',
-                    border: 'none',
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                  }}
-                >
-                  Auto Fill
-                </button>
+            <div style={{
+              padding: '0.85rem 1rem',
+              backgroundColor: 'rgba(55, 88, 249, 0.05)',
+              border: '1px solid rgba(55, 88, 249, 0.2)',
+              borderRadius: '8px',
+              fontSize: '0.8125rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              color: 'var(--color-text-secondary)',
+              lineHeight: 1.45,
+            }}>
+              <ShieldCheck size={20} style={{ color: 'var(--color-brand-primary)', flexShrink: 0 }} />
+              <div>
+                Please check your <strong>Gmail inbox</strong> (or Spam folder) for your 6-digit verification code and enter it below.
               </div>
-            )}
+            </div>
 
             <div className="form-group" style={{ textAlign: 'center' }}>
               <label className="label-text" htmlFor="verify-otp-input" style={{ display: 'block', marginBottom: '8px' }}>

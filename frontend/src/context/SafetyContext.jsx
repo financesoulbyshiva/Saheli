@@ -486,7 +486,6 @@ export function SafetyProvider({ children }) {
         isSupabase: isSupabaseConfigured,
         supabaseDispatched: supabaseResult?.success || false,
         message: data.message,
-        devOtp: data.devOtp,
         emailDelivered: data.emailDelivered,
         emailError: data.emailError,
         verificationToken: data.verificationToken,
@@ -568,7 +567,6 @@ export function SafetyProvider({ children }) {
         message: data.message,
         error: data.error,
         retryAfterSeconds: data.retryAfterSeconds,
-        devOtp: data.devOtp,
         emailDelivered: data.emailDelivered,
         emailError: data.emailError,
       };
