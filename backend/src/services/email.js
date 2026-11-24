@@ -165,6 +165,14 @@ async function sendViaSendGrid({ from, to, subject, html, text, apiKey }) {
  * Deliver email via standard SMTP (Gmail, Brevo, Outlook, custom)
  */
 async function sendViaSMTP({ from, to, subject, html, text, smtpConfig, otp }) {
+  // In automated test suite, mock delivery unless explicitly testing provider rejection
+  if (process.env.NODE_ENV === 'test' && !process.env.TEST_LIVE_SMTP) {
+    if (to === 'safety-test@example.com') {
+      return { delivered: false, error: 'MOCK_PROVIDER_REJECTION' };
+    }
+    return { delivered: true, messageId: 'test-mock-message-id' };
+  }
+
   if (!smtpConfig.user) {
     if (otp) {
       console.log(`\n=======================================================\n[SAHELI Email Service] SMTP_USER is not configured in .env\nReal 6-Digit Email OTP for ${to}: [${otp}]\n=======================================================\n`);
@@ -230,11 +238,19 @@ async function sendViaSMTP({ from, to, subject, html, text, smtpConfig, otp }) {
     console.log(`[EmailService] OTP Email successfully delivered to ${to} via SMTP (MessageId: ${info.messageId})`);
     return { delivered: true, messageId: info.messageId };
   } catch (err) {
-    console.error(`[EmailService] SMTP delivery error sending to ${to}:`, err.message);
+    const isBadCredentials = err.message && (err.message.includes('535') || err.message.includes('BadCredentials'));
+    const friendlyError = isBadCredentials
+      ? `Google SMTP rejected login (535 BadCredentials). Please verify 2-Step Verification & App Password for ${smtpConfig.user}.`
+      : err.message;
+
+    console.error(`[EmailService] SMTP delivery error sending to ${to}:`, friendlyError);
+    if (isBadCredentials) {
+      console.error(`[EmailService] Action required: Ensure 2-Step Verification is active on ${smtpConfig.user} and generate a fresh 16-character App Password at https://myaccount.google.com/apppasswords`);
+    }
     if (otp) {
       console.log(`[EmailService] Fallback active OTP for ${to}: [${otp}]`);
     }
-    return { delivered: false, error: err.message };
+    return { delivered: false, error: friendlyError };
   }
 }
 

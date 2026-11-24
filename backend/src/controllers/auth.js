@@ -218,7 +218,7 @@ export const authController = {
     const emailDelivered = Boolean(emailResult?.delivered);
     const emailNotice = emailDelivered
       ? 'A 6-digit verification code has been dispatched to your email address.'
-      : (isTestMode ? `Email service notice: ${emailResult?.error || 'could not deliver to inbox'}. Active code: [${otp}]` : 'A 6-digit verification code has been dispatched to your email address. Please check your inbox.');
+      : (isTestMode ? `Email service notice: ${emailResult?.error || 'could not deliver to inbox'}. Active code: [${otp}]` : `Notice: Verification email could not be delivered to inbox (${emailResult?.error || 'SMTP delivery failure'}). Please check your sender email configuration.`);
 
     sendJson(res, 201, {
       success: true,
@@ -308,6 +308,7 @@ export const authController = {
         tokenVersion: user.token_version || 1,
       });
 
+      const emailDelivered = Boolean(emailResult?.delivered);
       if (process.env.ENFORCE_VERIFIED_LOGIN === 'true') {
         sendJson(res, 403, {
           success: false,
@@ -316,9 +317,14 @@ export const authController = {
           userId: user.id,
           email: user.email,
           phone: user.phone,
-          error: 'Please verify your email address before logging in. A new 6-digit OTP code has been sent to your Gmail inbox.',
-          message: 'A new 6-digit OTP code has been sent to your Gmail inbox.',
-          emailDelivered: Boolean(emailResult?.delivered),
+          error: emailDelivered
+            ? 'Please verify your email address before logging in. A new 6-digit OTP code has been sent to your Gmail inbox.'
+            : `Please verify your email address. Verification code generated, but email could not be delivered (${emailResult?.error || 'SMTP failed'}).`,
+          message: emailDelivered
+            ? 'A new 6-digit OTP code has been sent to your Gmail inbox.'
+            : `Email delivery failed: ${emailResult?.error || 'SMTP error'}.`,
+          emailDelivered,
+          emailError: emailResult?.error || null,
           ...(process.env.NODE_ENV === 'test' || process.env.SAHELI_OTP_TEST_MODE === 'true' ? { devOtp: loginOtp } : {}),
         });
         return;
@@ -331,8 +337,11 @@ export const authController = {
         userId: user.id,
         email: user.email,
         phone: user.phone,
-        message: 'A fresh 6-digit verification OTP has been sent to your Gmail inbox.',
-        emailDelivered: Boolean(emailResult?.delivered),
+        message: emailDelivered
+          ? 'A fresh 6-digit verification OTP has been sent to your Gmail inbox.'
+          : `Verification code generated, but email delivery to inbox failed (${emailResult?.error || 'SMTP failure'}).`,
+        emailDelivered,
+        emailError: emailResult?.error || null,
         token,
         user: sanitizeUser(user),
         ...(process.env.NODE_ENV === 'test' || process.env.SAHELI_OTP_TEST_MODE === 'true' ? { devOtp: loginOtp } : {}),
@@ -507,9 +516,17 @@ export const authController = {
         emailResult = { delivered: false, error: err.message };
       }
 
+      const emailDelivered = Boolean(emailResult?.delivered);
       sendJson(res, 200, {
         ...genericSuccess,
-        emailSent: emailResult.delivered,
+        emailSent: emailDelivered,
+        emailDelivered,
+        emailError: emailDelivered ? null : (emailResult?.error || 'Email delivery failed'),
+        message: emailDelivered
+          ? 'If an account exists with this email, a password reset code has been sent to your inbox.'
+          : (process.env.NODE_ENV === 'test'
+              ? 'If an account exists with this email, a password reset code has been sent.'
+              : `Password reset requested, but email delivery to inbox failed: ${emailResult?.error || 'SMTP delivery error'}.`),
         ...(process.env.NODE_ENV === 'test' || process.env.SAHELI_OTP_TEST_MODE === 'true' ? { resetToken: resetOtp } : {}),
       });
       return;
@@ -706,10 +723,15 @@ export const authController = {
       emailResult = { delivered: false, error: err.message };
     }
 
+    const emailDelivered = Boolean(emailResult?.delivered);
     sendJson(res, 200, {
       success: true,
-      message: 'A fresh verification token has been dispatched to your email.',
-      emailSent: emailResult.delivered,
+      message: emailDelivered
+        ? 'A fresh verification token has been dispatched to your email.'
+        : `Verification token generated, but email could not be delivered to inbox (${emailResult?.error || 'SMTP failure'}).`,
+      emailSent: emailDelivered,
+      emailDelivered,
+      emailError: emailDelivered ? null : (emailResult?.error || 'Email delivery failed'),
       ...(process.env.NODE_ENV !== 'production' ? { verificationToken: token } : {}),
     });
   },
@@ -921,7 +943,7 @@ export const authController = {
       success: true,
       message: emailDelivered
         ? 'A fresh 6-digit verification code has been dispatched to your email address.'
-        : (isTestMode ? `Email service notice: ${emailResult?.error || 'could not deliver to inbox'}. Active code: [${newOtp}]` : 'A fresh 6-digit verification code has been dispatched to your email address. Please check your inbox.'),
+        : (isTestMode ? `Email service notice: ${emailResult?.error || 'could not deliver to inbox'}. Active code: [${newOtp}]` : `Notice: Verification email could not be delivered to inbox (${emailResult?.error || 'SMTP delivery failure'}).`),
       emailDelivered,
       emailError: emailResult?.error || null,
       ...(isTestMode ? { devOtp: newOtp } : {}),

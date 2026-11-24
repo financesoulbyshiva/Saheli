@@ -259,7 +259,12 @@ export function AuthModal({ isOpen, onClose, initialView = 'login', onOpenLegal,
           if (result.userId) setOtpUserId(result.userId);
           if (result.user?.id) setOtpUserId(result.user.id);
           setResendCooldown(60);
-          showToast('Verification code sent! Please check your Gmail inbox.', 'info');
+          if (result.emailDelivered === false) {
+            setError(`Account requires email verification, but OTP email could not be delivered to inbox (${result.emailError || 'SMTP failure'}).`);
+            showToast('Email delivery failed: ' + (result.emailError || 'Check sender credentials'), 'warning');
+          } else {
+            showToast('Verification code sent! Please check your Gmail inbox.', 'info');
+          }
           switchView('verify');
         } else {
           setError(result.error || 'Invalid credentials');
@@ -296,7 +301,12 @@ export function AuthModal({ isOpen, onClose, initialView = 'login', onOpenLegal,
         terms_accepted: true, terms_version: 'v2.0',
       });
       if (result.success) {
-        showToast('Account created! Please check your Gmail inbox for your 6-digit verification code.', 'success');
+        if (result.emailDelivered === false) {
+          setError(`Account created, but verification OTP could not be sent to your Gmail inbox (${result.emailError || 'SMTP failure'}). Please verify sender email credentials.`);
+          showToast('Account created, but email delivery failed: ' + (result.emailError || 'Check sender settings'), 'warning');
+        } else {
+          showToast('Account created! Please check your Gmail inbox for your 6-digit verification code.', 'success');
+        }
         setOtpTargetPhone(phone);
         setOtpTargetEmail(email);
         if (result.user?.id) setOtpUserId(result.user.id);
@@ -304,7 +314,12 @@ export function AuthModal({ isOpen, onClose, initialView = 'login', onOpenLegal,
         setOtpInput('');
         switchView('verify');
       } else if (result.unverified || result.requiresOtp) {
-        showToast(result.message || 'Account already created! A fresh verification code was sent to your Gmail inbox.', 'info');
+        if (result.emailDelivered === false) {
+          setError(`Account already exists, but verification OTP could not be sent to your Gmail inbox (${result.emailError || 'SMTP failure'}).`);
+          showToast('Email delivery failed: ' + (result.emailError || 'Check sender settings'), 'warning');
+        } else {
+          showToast(result.message || 'Account already created! A fresh verification code was sent to your Gmail inbox.', 'info');
+        }
         setOtpTargetPhone(phone);
         setOtpTargetEmail(email);
         if (result.userId) setOtpUserId(result.userId);
@@ -368,7 +383,13 @@ export function AuthModal({ isOpen, onClose, initialView = 'login', onOpenLegal,
       });
       if (result.success) {
         setResendCooldown(result.retryAfterSeconds || 60);
-        setSuccessMsg(result.message || 'A fresh verification code was sent to your email.');
+        if (result.emailDelivered === false) {
+          setError(`Could not deliver OTP email: ${result.emailError || 'SMTP delivery failed'}`);
+          showToast(`Email delivery failed: ${result.emailError || 'Check sender settings'}`, 'warning');
+        } else {
+          setSuccessMsg(result.message || 'A fresh verification code was sent to your email.');
+          showToast('Verification code resent to your Gmail inbox!', 'success');
+        }
       } else {
         if (result.retryAfterSeconds) {
           setResendCooldown(result.retryAfterSeconds);
@@ -388,10 +409,15 @@ export function AuthModal({ isOpen, onClose, initialView = 'login', onOpenLegal,
     setLoading(true);
     try {
       const result = await forgotPassword(email);
-      setSuccessMsg(result.message || 'A 6-digit password reset code has been sent to your Gmail inbox.');
-      showToast('Reset code sent! Please check your Gmail inbox.', 'success');
-      setTokenInput('');
-      switchView('reset');
+      if (result.emailSent === false || result.emailDelivered === false) {
+        setError(`Password reset requested, but email could not be delivered to your inbox (${result.emailError || 'SMTP failure'}). Please check sender email configuration.`);
+        showToast('Email delivery failed: ' + (result.emailError || 'Check sender email'), 'error');
+      } else {
+        setSuccessMsg(result.message || 'A 6-digit password reset code has been sent to your Gmail inbox.');
+        showToast('Reset code sent! Please check your Gmail inbox.', 'success');
+        setTokenInput('');
+        switchView('reset');
+      }
     } catch (err) {
       setError(err.message || 'Request failed. Please try again.');
     } finally {
