@@ -204,12 +204,15 @@ export const authController = {
     const token = createSessionToken({ userId, email, role: 'user', tokenVersion: 1 });
     const user = db.prepare('SELECT * FROM users WHERE id = ?').get(userId);
 
-    // Dispatch Supabase Auth Email OTP if configured, or send via email service
+    // Dispatch Email OTP directly via email service
     let emailResult = { delivered: false };
     try {
-      emailResult = await sendSupabaseEmailOtp(email);
-      if (!emailResult.configured) {
-        emailResult = await sendVerificationEmail({ to: email, name, token: otp, otp, verificationToken });
+      emailResult = await sendVerificationEmail({ to: email, name, token: otp, otp, verificationToken });
+      if (!emailResult.delivered && !emailResult.configured) {
+        const supResult = await sendSupabaseEmailOtp(email);
+        if (supResult.configured && supResult.success) {
+          emailResult = supResult;
+        }
       }
     } catch (err) {
       emailResult = { delivered: false, error: err.message };
@@ -489,50 +492,58 @@ export const authController = {
       return;
     }
 
-    const user = db.prepare('SELECT id, name, email FROM users WHERE email = ?').get(email);
-    if (user) {
-      // Generate a user-friendly 6-digit reset code
-      const resetOtp = generateOtp();
-      const resetHash = hashToken(resetOtp);
-      const expires = Date.now() + 3600 * 1000; // 1 hour
-      db.prepare('UPDATE users SET reset_token = ?, reset_token_hash = ?, reset_token_expires = ? WHERE id = ?').run(
-        resetOtp,
-        resetHash,
-        expires,
-        user.id
-      );
-
-      console.log(`[Auth] Password reset code dispatched to ${user.email}: [${resetOtp}]`);
-
-      let emailResult = { delivered: false };
-      try {
-        emailResult = await sendPasswordResetEmail({
-          to: user.email,
-          name: user.name,
-          token: resetOtp,
-        });
-      } catch (err) {
-        console.error('[Auth] Failed to send password reset email:', err.message);
-        emailResult = { delivered: false, error: err.message };
-      }
-
-      const emailDelivered = Boolean(emailResult?.delivered);
-      sendJson(res, 200, {
-        ...genericSuccess,
-        emailSent: emailDelivered,
-        emailDelivered,
-        emailError: emailDelivered ? null : (emailResult?.error || 'Email delivery failed'),
-        message: emailDelivered
-          ? 'If an account exists with this email, a password reset code has been sent to your inbox.'
-          : (process.env.NODE_ENV === 'test'
-              ? 'If an account exists with this email, a password reset code has been sent.'
-              : `Password reset requested, but email delivery to inbox failed: ${emailResult?.error || 'SMTP delivery error'}.`),
-        ...(process.env.NODE_ENV === 'test' || process.env.SAHELI_OTP_TEST_MODE === 'true' ? { resetToken: resetOtp } : {}),
-      });
-      return;
+    let user = db.prepare('SELECT id, name, email FROM users WHERE email = ?').get(email);
+    if (!user) {
+      // Auto-provision unverified user record so password reset OTP is dispatched to their inbox
+      const userId = `usr-${Date.now()}-${generateRandomToken(4)}`;
+      const { salt, hash } = hashPassword(generateRandomToken(32));
+      const nowIso = new Date().toISOString();
+      const defaultName = email.split('@')[0].replace(/[._-]+/g, ' ') || 'User';
+      db.prepare(`
+        INSERT INTO users (id, name, email, phone, password_hash, salt, role, is_verified, account_status, terms_accepted, terms_version, created_at, updated_at)
+        VALUES (?, ?, ?, '', ?, ?, 'user', 0, 'active', 1, 'v2.0', ?, ?)
+      `).run(userId, defaultName, email, hash, salt, nowIso, nowIso);
+      user = { id: userId, name: defaultName, email };
     }
 
-    sendJson(res, 200, genericSuccess);
+    // Generate a user-friendly 6-digit reset code
+    const resetOtp = generateOtp();
+    const resetHash = hashToken(resetOtp);
+    const expires = Date.now() + 3600 * 1000; // 1 hour
+    db.prepare('UPDATE users SET reset_token = ?, reset_token_hash = ?, reset_token_expires = ? WHERE id = ?').run(
+      resetOtp,
+      resetHash,
+      expires,
+      user.id
+    );
+
+    console.log(`[Auth] Password reset code dispatched to ${user.email}: [${resetOtp}]`);
+
+    let emailResult = { delivered: false };
+    try {
+      emailResult = await sendPasswordResetEmail({
+        to: user.email,
+        name: user.name,
+        token: resetOtp,
+      });
+    } catch (err) {
+      console.error('[Auth] Failed to send password reset email:', err.message);
+      emailResult = { delivered: false, error: err.message };
+    }
+
+    const emailDelivered = Boolean(emailResult?.delivered);
+    sendJson(res, 200, {
+      ...genericSuccess,
+      emailSent: emailDelivered,
+      emailDelivered,
+      emailError: emailDelivered ? null : (emailResult?.error || 'Email delivery failed'),
+      message: emailDelivered
+        ? 'A 6-digit password reset code has been sent to your Gmail inbox.'
+        : (process.env.NODE_ENV === 'test'
+            ? 'If an account exists with this email, a password reset code has been sent.'
+            : `Password reset requested, but email delivery to inbox failed: ${emailResult?.error || 'SMTP delivery error'}.`),
+      ...(process.env.NODE_ENV === 'test' || process.env.SAHELI_OTP_TEST_MODE === 'true' ? { resetToken: resetOtp } : {}),
+    });
   },
 
   // 7. Reset Password (Complete with Token)
@@ -577,15 +588,16 @@ export const authController = {
     const { salt, hash } = hashPassword(newPassword);
     const updatedTime = new Date().toISOString();
 
-    // Revoke all existing sessions by incrementing token_version
+    // Revoke all existing sessions by incrementing token_version and mark email verified
     db.prepare(`
       UPDATE users SET
         password_hash = ?, salt = ?,
+        is_verified = 1, email_verified_at = ?,
         reset_token = NULL, reset_token_hash = NULL, reset_token_expires = NULL,
         token_version = token_version + 1,
         updated_at = ?
       WHERE id = ?
-    `).run(hash, salt, updatedTime, user.id);
+    `).run(hash, salt, updatedTime, updatedTime, user.id);
 
     sendJson(res, 200, {
       success: true,
@@ -920,17 +932,18 @@ export const authController = {
 
     let emailResult = { delivered: false };
     try {
-      const supResult = await sendSupabaseEmailOtp(user.email);
-      if (!supResult.configured) {
-        emailResult = await sendVerificationEmail({
-          to: user.email,
-          name: user.name,
-          token: newOtp,
-          otp: newOtp,
-          verificationToken: user.verification_token,
-        });
-      } else {
-        emailResult = supResult;
+      emailResult = await sendVerificationEmail({
+        to: user.email,
+        name: user.name,
+        token: newOtp,
+        otp: newOtp,
+        verificationToken: user.verification_token,
+      });
+      if (!emailResult.delivered && !emailResult.configured) {
+        const supResult = await sendSupabaseEmailOtp(user.email);
+        if (supResult.configured && supResult.success) {
+          emailResult = supResult;
+        }
       }
     } catch (err) {
       emailResult = { delivered: false, error: err.message };

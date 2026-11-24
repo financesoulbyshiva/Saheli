@@ -10,12 +10,19 @@ import { createClient } from '@supabase/supabase-js';
 let supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
 let supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 
-export let isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey);
+const isDummy = (supabaseUrl || '').includes('your-project-id') || (supabaseAnonKey || '').includes('your_supabase');
+export let isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey && !isDummy);
 
 export let supabaseClient = null;
 
 export function initializeSupabase(url, key) {
   if (!url || !key) return null;
+  const isDummyUrl = (url || '').includes('your-project-id') || (key || '').includes('your_supabase');
+  if (isDummyUrl) {
+    isSupabaseConfigured = false;
+    supabaseClient = null;
+    return null;
+  }
   supabaseUrl = url;
   supabaseAnonKey = key;
   isSupabaseConfigured = true;
