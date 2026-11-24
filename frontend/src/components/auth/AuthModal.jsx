@@ -434,7 +434,7 @@ export function AuthModal({ isOpen, onClose, initialView = 'login', onOpenLegal,
     }
     setLoading(true);
     try {
-      const result = await resetPassword(tokenInput, password);
+      const result = await resetPassword(tokenInput, password, email);
       if (result.success) {
         showToast('Password reset successfully. Please log in.', 'success');
         resetForm();
@@ -822,6 +822,20 @@ export function AuthModal({ isOpen, onClose, initialView = 'login', onOpenLegal,
         {view === 'reset' && (
           <form onSubmit={handleResetPassword} style={{ display: 'flex', flexDirection: 'column', gap: '0.875rem' }}>
             {backToLogin}
+
+            {email && (
+              <div style={{
+                fontSize: '0.75rem',
+                color: 'var(--color-brand-primary)',
+                fontWeight: 600,
+                backgroundColor: 'rgba(233, 30, 99, 0.08)',
+                padding: '6px 10px',
+                borderRadius: '6px',
+                textAlign: 'center',
+              }}>
+                Resetting password for: {email}
+              </div>
+            )}
 
             <div className="form-group">
               <label className="label-text" htmlFor="reset-token">Password Reset Code / Token</label>

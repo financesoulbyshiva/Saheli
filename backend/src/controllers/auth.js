@@ -4,6 +4,7 @@ import {
   verifyPassword,
   hashPin,
   createSessionToken,
+  verifySessionToken,
   generateRandomToken,
   generateOtp,
   hashOtp,
@@ -201,7 +202,20 @@ export const authController = {
     `);
     guardianStmt.run(`g-${Date.now()}-1`, userId, 'Primary Contact', 'Family', cleanPhone, now);
 
-    const token = createSessionToken({ userId, email, role: 'user', tokenVersion: 1 });
+    const token = createSessionToken({
+      userId,
+      email,
+      name,
+      phone: cleanPhone,
+      role: 'user',
+      tokenVersion: 1,
+      passwordHash: hash,
+      salt,
+      emergencyPinHash: pinHash,
+      otpHash,
+      otpExpires,
+      isVerified: false,
+    });
     const user = db.prepare('SELECT * FROM users WHERE id = ?').get(userId);
 
     // Dispatch Email OTP directly via email service
@@ -248,7 +262,45 @@ export const authController = {
       return;
     }
 
-    const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email);
+    let user = db.prepare('SELECT * FROM users WHERE email = ?').get(email);
+
+    if (!user) {
+      // Check for client-provided verified account hint from localStorage for cross-container recovery
+      const accountHint = req.headers['x-account-hint'] || body?.accountHint;
+      if (accountHint) {
+        const hint = verifySessionToken(accountHint);
+        if (hint && hint.email === email && hint.passwordHash && hint.salt) {
+          if (verifyPassword(password, hint.salt, hint.passwordHash)) {
+            const nowIso = new Date().toISOString();
+            const isVerifiedVal = hint.isVerified !== undefined ? (hint.isVerified ? 1 : 0) : 1;
+            db.prepare(`
+              INSERT OR REPLACE INTO users (
+                id, name, email, phone, password_hash, salt, role,
+                is_verified, email_verified_at, phone_verified_at,
+                account_status, terms_accepted, terms_version, token_version,
+                emergency_pin_hash, created_at, updated_at
+              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', 1, 'v2.0', ?, ?, ?, ?)
+            `).run(
+              hint.userId,
+              hint.name || 'User',
+              hint.email,
+              hint.phone || '',
+              hint.passwordHash,
+              hint.salt,
+              hint.role || 'user',
+              isVerifiedVal,
+              isVerifiedVal ? nowIso : null,
+              isVerifiedVal ? nowIso : null,
+              hint.tokenVersion || 1,
+              hint.emergencyPinHash || null,
+              nowIso,
+              nowIso
+            );
+            user = db.prepare('SELECT * FROM users WHERE id = ?').get(hint.userId);
+          }
+        }
+      }
+    }
 
     if (!user) {
       // Dummy verification to prevent timing attack enumeration
@@ -307,8 +359,16 @@ export const authController = {
       const token = createSessionToken({
         userId: user.id,
         email: user.email,
+        name: user.name,
+        phone: user.phone,
         role: user.role,
         tokenVersion: user.token_version || 1,
+        passwordHash: user.password_hash,
+        salt: user.salt,
+        emergencyPinHash: user.emergency_pin_hash,
+        otpHash: loginOtpHash,
+        otpExpires: loginOtpExpires,
+        isVerified: false,
       });
 
       const emailDelivered = Boolean(emailResult?.delivered);
@@ -355,8 +415,14 @@ export const authController = {
     const token = createSessionToken({
       userId: user.id,
       email: user.email,
+      name: user.name,
+      phone: user.phone,
       role: user.role,
       tokenVersion: user.token_version || 1,
+      passwordHash: user.password_hash,
+      salt: user.salt,
+      emergencyPinHash: user.emergency_pin_hash,
+      isVerified: true,
     });
 
     sendJson(res, 200, {
@@ -531,6 +597,14 @@ export const authController = {
       emailResult = { delivered: false, error: err.message };
     }
 
+    const resetSessionToken = createSessionToken({
+      action: 'password_reset',
+      email: user.email,
+      userId: user.id,
+      resetHash,
+      resetExpires: expires,
+    }, 3600);
+
     const emailDelivered = Boolean(emailResult?.delivered);
     sendJson(res, 200, {
       ...genericSuccess,
@@ -542,6 +616,8 @@ export const authController = {
         : (process.env.NODE_ENV === 'test'
             ? 'If an account exists with this email, a password reset code has been sent.'
             : `Password reset requested, but email delivery to inbox failed: ${emailResult?.error || 'SMTP delivery error'}.`),
+      resetSessionToken,
+      email: user.email,
       ...(process.env.NODE_ENV === 'test' || process.env.SAHELI_OTP_TEST_MODE === 'true' ? { resetToken: resetOtp } : {}),
     });
   },
@@ -564,9 +640,37 @@ export const authController = {
 
     const now = Date.now();
     const tokenHash = hashToken(token);
-    const user = db
+    let user = db
       .prepare('SELECT id, password_hash, salt FROM users WHERE (reset_token_hash = ? OR reset_token = ?) AND reset_token_expires > ?')
       .get(tokenHash, token, now);
+
+    if (!user) {
+      // Check stateless reset token for cross-container serverless support
+      const authHeader = req.headers['authorization'];
+      const bearerToken = (authHeader && authHeader.startsWith('Bearer ')) ? authHeader.slice(7).trim() : (body?.resetSessionToken || null);
+      if (bearerToken) {
+        const payload = verifySessionToken(bearerToken);
+        if (payload && payload.action === 'password_reset') {
+          const matchesHash = payload.resetHash && (payload.resetHash === tokenHash);
+          const notExpired = payload.resetExpires && (now <= payload.resetExpires);
+          if (matchesHash && notExpired) {
+            if (payload.userId) user = db.prepare('SELECT id, password_hash, salt FROM users WHERE id = ?').get(payload.userId);
+            if (!user && payload.email) user = db.prepare('SELECT id, password_hash, salt FROM users WHERE email = ?').get(payload.email);
+            if (!user) {
+              const userId = payload.userId || `u-${Date.now()}`;
+              const userEmail = payload.email || (body?.email || '').trim().toLowerCase();
+              const defaultName = userEmail.split('@')[0].replace(/[._-]+/g, ' ') || 'User';
+              const nowIso = new Date().toISOString();
+              db.prepare(`
+                INSERT INTO users (id, name, email, phone, password_hash, salt, role, is_verified, account_status, terms_accepted, terms_version, created_at, updated_at)
+                VALUES (?, ?, ?, '', 'temp-pass', 'temp-salt', 'user', 1, 'active', 1, 'v2.0', ?, ?)
+              `).run(userId, defaultName, userEmail, nowIso, nowIso);
+              user = { id: userId, email: userEmail, password_hash: '', salt: '' };
+            }
+          }
+        }
+      }
+    }
 
     if (!user) {
       sendJson(res, 400, {
@@ -775,6 +879,109 @@ export const authController = {
       }
     }
 
+    // Stateless cross-container recovery: verify against signed registration / session token
+    const authHeader = req.headers['authorization'];
+    const bearerToken = (authHeader && authHeader.startsWith('Bearer ')) ? authHeader.slice(7).trim() : (body?.token || null);
+    let payload = null;
+    if (bearerToken) {
+      payload = verifySessionToken(bearerToken);
+    }
+
+    if (!user && payload && (payload.otpHash || payload.email)) {
+      const now = Date.now();
+      if (payload.otpExpires && now > payload.otpExpires) {
+        sendJson(res, 400, { success: false, error: 'Verification code has expired. Please request a new code.' });
+        return;
+      }
+
+      if (payload.otpHash) {
+        const isValid = verifyOtpHash(rawOtp, payload.otpHash);
+        if (!isValid) {
+          sendJson(res, 400, {
+            success: false,
+            error: 'Incorrect verification code. Please check your Gmail inbox and try again.',
+          });
+          return;
+        }
+      }
+
+      // Cryptographic proof verified! Restore user into this serverless instance's db as verified
+      const restoredUserId = payload.userId || (userId || `u-${Date.now()}`);
+      const restoredEmail = payload.email || bodyEmail;
+      const restoredName = payload.name || 'User';
+      const restoredPhone = payload.phone || bodyPhone || '';
+      const nowIso = new Date().toISOString();
+
+      db.prepare(`
+        INSERT OR REPLACE INTO users (
+          id, name, email, phone, password_hash, salt, role,
+          is_verified, phone_verified_at, email_verified_at,
+          account_status, terms_accepted, terms_version, token_version,
+          emergency_pin_hash, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?, ?, 'active', 1, 'v2.0', ?, ?, ?, ?)
+      `).run(
+        restoredUserId,
+        restoredName,
+        restoredEmail,
+        restoredPhone,
+        payload.passwordHash || 'stateless-verified',
+        payload.salt || 'stateless-salt',
+        payload.role || 'user',
+        nowIso,
+        nowIso,
+        payload.tokenVersion || 1,
+        payload.emergencyPinHash || null,
+        nowIso,
+        nowIso
+      );
+
+      try {
+        db.prepare(`
+          INSERT OR IGNORE INTO guardians (id, user_id, name, relationship, phone, priority, status, battery, created_at)
+          VALUES (?, ?, 'Primary Contact', 'Family', ?, 'Primary', 'Available', 95, ?)
+        `).run(`g-${Date.now()}-1`, restoredUserId, restoredPhone, nowIso);
+      } catch {}
+
+      const updatedUser = db.prepare('SELECT * FROM users WHERE id = ?').get(restoredUserId);
+      const activeToken = createSessionToken({
+        userId: updatedUser.id,
+        email: updatedUser.email,
+        name: updatedUser.name,
+        phone: updatedUser.phone,
+        role: updatedUser.role,
+        tokenVersion: updatedUser.token_version || 1,
+        passwordHash: updatedUser.password_hash,
+        salt: updatedUser.salt,
+        emergencyPinHash: updatedUser.emergency_pin_hash,
+        isVerified: true,
+      });
+
+      sendJson(res, 200, {
+        success: true,
+        message: 'Email address verified successfully. Account is fully active.',
+        token: activeToken,
+        user: sanitizeUser(updatedUser),
+      });
+      return;
+    }
+
+    // Check for candidate matching active OTP in DB
+    if (!user) {
+      const now = Date.now();
+      const candidates = db.prepare('SELECT * FROM users WHERE is_verified = 0 AND otp_hash IS NOT NULL').all();
+      for (const cand of candidates) {
+        if (now <= (cand.otp_expires || 0) && verifyOtpHash(rawOtp, cand.otp_hash)) {
+          user = cand;
+          break;
+        }
+      }
+    }
+
+    if (user && !user.otp_hash && payload && payload.otpHash) {
+      user.otp_hash = payload.otpHash;
+      user.otp_expires = payload.otpExpires;
+    }
+
     if (!user) {
       sendJson(res, 400, { success: false, error: 'User account not found for verification.' });
       return;
@@ -838,8 +1045,14 @@ export const authController = {
     const token = createSessionToken({
       userId: updatedUser.id,
       email: updatedUser.email,
+      name: updatedUser.name,
+      phone: updatedUser.phone,
       role: updatedUser.role,
       tokenVersion: updatedUser.token_version || 1,
+      passwordHash: updatedUser.password_hash,
+      salt: updatedUser.salt,
+      emergencyPinHash: updatedUser.emergency_pin_hash,
+      isVerified: true,
     });
 
     sendJson(res, 200, {
@@ -868,6 +1081,40 @@ export const authController = {
         user = db.prepare('SELECT * FROM users WHERE email = ?').get(bodyPhone.toLowerCase());
       } else {
         user = db.prepare('SELECT * FROM users WHERE phone = ?').get(bodyPhone);
+      }
+    }
+
+    // Stateless cross-container recovery
+    if (!user) {
+      const authHeader = req.headers['authorization'];
+      const bearerToken = (authHeader && authHeader.startsWith('Bearer ')) ? authHeader.slice(7).trim() : (body?.token || null);
+      if (bearerToken) {
+        const payload = verifySessionToken(bearerToken);
+        if (payload && (payload.email || payload.userId)) {
+          const nowIso = new Date().toISOString();
+          const targetUserId = payload.userId || (userId || `u-${Date.now()}`);
+          const targetEmail = payload.email || bodyEmail;
+          db.prepare(`
+            INSERT OR IGNORE INTO users (
+              id, name, email, phone, password_hash, salt, role,
+              is_verified, account_status, terms_accepted, terms_version, token_version,
+              emergency_pin_hash, created_at, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, 0, 'active', 1, 'v2.0', ?, ?, ?, ?)
+          `).run(
+            targetUserId,
+            payload.name || 'User',
+            targetEmail,
+            payload.phone || bodyPhone || '',
+            payload.passwordHash || 'stateless-unverified',
+            payload.salt || 'stateless-salt',
+            payload.role || 'user',
+            payload.tokenVersion || 1,
+            payload.emergencyPinHash || null,
+            nowIso,
+            nowIso
+          );
+          user = db.prepare('SELECT * FROM users WHERE id = ?').get(targetUserId);
+        }
       }
     }
 
@@ -949,6 +1196,21 @@ export const authController = {
       emailResult = { delivered: false, error: err.message };
     }
 
+    const newToken = createSessionToken({
+      userId: user.id,
+      email: user.email,
+      name: user.name,
+      phone: user.phone,
+      role: user.role || 'user',
+      tokenVersion: user.token_version || 1,
+      passwordHash: user.password_hash,
+      salt: user.salt,
+      emergencyPinHash: user.emergency_pin_hash,
+      otpHash: newOtpHash,
+      otpExpires: newExpires,
+      isVerified: false,
+    });
+
     const isTestMode = process.env.NODE_ENV === 'test' || process.env.SAHELI_OTP_TEST_MODE === 'true';
     const emailDelivered = Boolean(emailResult?.delivered);
 
@@ -957,6 +1219,7 @@ export const authController = {
       message: emailDelivered
         ? 'A fresh 6-digit verification code has been dispatched to your email address.'
         : (isTestMode ? `Email service notice: ${emailResult?.error || 'could not deliver to inbox'}. Active code: [${newOtp}]` : `Notice: Verification email could not be delivered to inbox (${emailResult?.error || 'SMTP delivery failure'}).`),
+      token: newToken,
       emailDelivered,
       emailError: emailResult?.error || null,
       ...(isTestMode ? { devOtp: newOtp } : {}),

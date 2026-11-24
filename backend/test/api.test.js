@@ -1387,4 +1387,98 @@ test('SAHELI Complete Production Security & API Test Suite', async (t) => {
     assert.equal(res.body.success, false);
     assert.match(res.body.error, /email mismatch/i);
   });
+
+  // 55. Cross-Container Serverless OTP Verification: Verifies user statelessly from signed registration token
+  await t.test('55. Cross-Container OTP Verification: Provisions user statelessly when absent from local SQLite', async () => {
+    const statelessEmail = `stateless_${Date.now()}@saheli.org`;
+    const regRes = await makeRequest('/api/auth/register', {
+      method: 'POST',
+      headers: otpTestHeaders,
+      body: {
+        name: 'Stateless Container User',
+        email: statelessEmail,
+        phone: '+91 9888877777',
+        password: 'ValidPassword123!',
+      },
+    });
+
+    assert.equal(regRes.status, 201);
+    const regToken = regRes.body.token;
+    const regOtp = regRes.body.devOtp;
+    const registeredUserId = regRes.body.user.id;
+    assert.ok(regToken, 'Registration returned HMAC-signed token');
+    assert.ok(regOtp, 'Registration returned active OTP');
+
+    // Simulate switching to a fresh Vercel Lambda container: wipe this user from SQLite
+    db.prepare('DELETE FROM users WHERE id = ?').run(registeredUserId);
+    assert.equal(db.prepare('SELECT id FROM users WHERE id = ?').get(registeredUserId), undefined);
+
+    // Verify OTP passing the signed registration token
+    const verifyRes = await makeRequest('/api/auth/verify-otp', {
+      method: 'POST',
+      headers: {
+        ...otpTestHeaders,
+        Authorization: `Bearer ${regToken}`,
+      },
+      body: {
+        userId: registeredUserId,
+        email: statelessEmail,
+        otp: regOtp,
+        token: regToken,
+      },
+    });
+
+    assert.equal(verifyRes.status, 200);
+    assert.equal(verifyRes.body.success, true);
+    assert.ok(verifyRes.body.token);
+
+    // Verify user was successfully restored and activated in SQLite
+    const restoredUser = db.prepare('SELECT * FROM users WHERE id = ?').get(registeredUserId);
+    assert.ok(restoredUser, 'User successfully restored in local container SQLite');
+    assert.equal(restoredUser.is_verified, 1);
+    assert.equal(restoredUser.email, statelessEmail);
+  });
+
+  // 56. Cross-Container Serverless Password Reset: Resets password statelessly when absent from local SQLite
+  await t.test('56. Cross-Container Password Reset: Resets password statelessly using resetSessionToken', async () => {
+    const forgotEmail = `forgot_stateless_${Date.now()}@saheli.org`;
+    const forgotRes = await makeRequest('/api/auth/forgot-password', {
+      method: 'POST',
+      headers: otpTestHeaders,
+      body: { email: forgotEmail },
+    });
+
+    assert.equal(forgotRes.status, 200);
+    const resetOtp = forgotRes.body.resetToken;
+    const resetSessionToken = forgotRes.body.resetSessionToken;
+    assert.ok(resetOtp, 'Forgot password returned OTP');
+    assert.ok(resetSessionToken, 'Forgot password returned HMAC resetSessionToken');
+
+    // Simulate new cold Lambda container: wipe user from SQLite
+    db.prepare('DELETE FROM users WHERE email = ?').run(forgotEmail);
+    assert.equal(db.prepare('SELECT id FROM users WHERE email = ?').get(forgotEmail), undefined);
+
+    // Submit reset password with resetSessionToken
+    const resetRes = await makeRequest('/api/auth/reset-password', {
+      method: 'POST',
+      headers: {
+        ...otpTestHeaders,
+        Authorization: `Bearer ${resetSessionToken}`,
+      },
+      body: {
+        token: resetOtp,
+        newPassword: 'BrandNewSecurePassword999!',
+        email: forgotEmail,
+        resetSessionToken,
+      },
+    });
+
+    assert.equal(resetRes.status, 200);
+    assert.equal(resetRes.body.success, true);
+
+    // Verify user was restored with new password
+    const restored = db.prepare('SELECT * FROM users WHERE email = ?').get(forgotEmail);
+    assert.ok(restored, 'User restored in SQLite');
+    assert.equal(restored.is_verified, 1);
+  });
 });

@@ -417,26 +417,44 @@ export function SafetyProvider({ children }) {
   // ===========================================================================
 
   const login = useCallback(async (email, password) => {
+    const cleanEmail = (email || '').trim().toLowerCase();
+    let accountHint = null;
+    try {
+      accountHint = localStorage.getItem('saheli_account_hint_' + cleanEmail);
+    } catch {}
+
     const res = await fetch('/api/auth/login', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
+      headers: {
+        'Content-Type': 'application/json',
+        ...(accountHint ? { 'x-account-hint': accountHint } : {})
+      },
+      body: JSON.stringify({ email: cleanEmail, password, accountHint }),
     });
 
     const data = await res.json();
     if (res.ok && data.success) {
+      if (data.token) {
+        try {
+          localStorage.setItem(LOCAL_STORAGE_KEY_TOKEN, data.token);
+          localStorage.setItem('saheli_account_hint_' + cleanEmail, data.token);
+        } catch {}
+      }
       if (data.unverified) {
+        if (data.token) setToken(data.token);
         return {
           success: false,
           pendingVerification: true,
           unverified: true,
           userId: data.userId || data.user?.id,
           user: data.user,
+          token: data.token,
+          emailDelivered: data.emailDelivered,
+          emailError: data.emailError,
           message: data.message,
           error: data.message || 'Please verify your email address to access your SAHELI safety features.',
         };
       }
-      localStorage.setItem(LOCAL_STORAGE_KEY_TOKEN, data.token);
       setToken(data.token);
       setUser(data.user);
       return { success: true, user: data.user };
@@ -451,6 +469,8 @@ export function SafetyProvider({ children }) {
       unverified: isUnverified,
       userId: data.userId,
       user: data.user,
+      emailDelivered: data.emailDelivered,
+      emailError: data.emailError,
     };
   }, []);
 
@@ -471,7 +491,12 @@ export function SafetyProvider({ children }) {
     const data = await res.json();
     if (res.ok && data.success) {
       if (data.token) {
-        localStorage.setItem(LOCAL_STORAGE_KEY_TOKEN, data.token);
+        try {
+          localStorage.setItem(LOCAL_STORAGE_KEY_TOKEN, data.token);
+          if (userData.email) {
+            localStorage.setItem('saheli_account_hint_' + userData.email.trim().toLowerCase(), data.token);
+          }
+        } catch {}
         setToken(data.token);
       }
       if (data.user) {
@@ -536,16 +561,30 @@ export function SafetyProvider({ children }) {
       }
     }
 
-    // 2. Local / Standard verification
+    // 2. Local / Standard verification with stateless token pass-through
+    let currentToken = null;
+    try {
+      currentToken = localStorage.getItem(LOCAL_STORAGE_KEY_TOKEN);
+    } catch {}
+    currentToken = currentToken || token;
+
     const res = await fetch('/api/auth/verify-otp', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId, phone, email, otp }),
+      headers: {
+        'Content-Type': 'application/json',
+        ...(currentToken ? { Authorization: `Bearer ${currentToken}` } : {}),
+      },
+      body: JSON.stringify({ userId, phone, email, otp, token: currentToken }),
     });
     const data = await res.json();
     if (res.ok && data.success) {
       if (data.token) {
-        localStorage.setItem(LOCAL_STORAGE_KEY_TOKEN, data.token);
+        try {
+          localStorage.setItem(LOCAL_STORAGE_KEY_TOKEN, data.token);
+          if (email) {
+            localStorage.setItem('saheli_account_hint_' + email.trim().toLowerCase(), data.token);
+          }
+        } catch {}
         setToken(data.token);
       }
       if (data.user) {
@@ -560,19 +599,34 @@ export function SafetyProvider({ children }) {
       error: data.error || 'Verification failed',
       remainingAttempts: data.remainingAttempts,
     };
-  }, []);
+  }, [token]);
 
   const resendOtp = useCallback(async ({ userId, phone, email }) => {
     if (isSupabaseConfigured && email) {
       await sendSupabaseEmailOtp(email);
     }
+    let currentToken = null;
+    try {
+      currentToken = localStorage.getItem(LOCAL_STORAGE_KEY_TOKEN);
+    } catch {}
+    currentToken = currentToken || token;
+
     try {
       const res = await fetch('/api/auth/resend-otp', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, phone, email }),
+        headers: {
+          'Content-Type': 'application/json',
+          ...(currentToken ? { Authorization: `Bearer ${currentToken}` } : {}),
+        },
+        body: JSON.stringify({ userId, phone, email, token: currentToken }),
       });
       const data = await res.json();
+      if (res.ok && data.token) {
+        try {
+          localStorage.setItem(LOCAL_STORAGE_KEY_TOKEN, data.token);
+        } catch {}
+        setToken(data.token);
+      }
       return {
         success: res.ok && data.success,
         message: data.message,
@@ -584,7 +638,7 @@ export function SafetyProvider({ children }) {
     } catch {
       return { success: false, error: 'Network error. Please try again.' };
     }
-  }, []);
+  }, [token]);
 
   // Session expired state — exposed for AuthModal to open with 'session-expired' view
   const [sessionExpired, setSessionExpired] = useState(false);
@@ -673,21 +727,51 @@ export function SafetyProvider({ children }) {
   }, []);
 
   const forgotPassword = useCallback(async (email) => {
+    const cleanEmail = (email || '').trim().toLowerCase();
     const res = await fetch('/api/auth/forgot-password', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email }),
-    });
-    return await res.json();
-  }, []);
-
-  const resetPassword = useCallback(async (resetToken, newPassword) => {
-    const res = await fetch('/api/auth/reset-password', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token: resetToken, newPassword }),
+      body: JSON.stringify({ email: cleanEmail }),
     });
     const data = await res.json();
+    if (res.ok && data.resetSessionToken) {
+      try {
+        localStorage.setItem('saheli_reset_session_token', data.resetSessionToken);
+        localStorage.setItem('saheli_reset_email', cleanEmail);
+      } catch {}
+    }
+    return data;
+  }, []);
+
+  const resetPassword = useCallback(async (resetToken, newPassword, emailOverride) => {
+    let resetSessionToken = null;
+    let storedEmail = null;
+    try {
+      resetSessionToken = localStorage.getItem('saheli_reset_session_token');
+      storedEmail = localStorage.getItem('saheli_reset_email');
+    } catch {}
+    const emailToUse = (emailOverride || storedEmail || '').trim().toLowerCase();
+
+    const res = await fetch('/api/auth/reset-password', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(resetSessionToken ? { Authorization: `Bearer ${resetSessionToken}` } : {}),
+      },
+      body: JSON.stringify({
+        token: resetToken,
+        newPassword,
+        email: emailToUse,
+        resetSessionToken,
+      }),
+    });
+    const data = await res.json();
+    if (res.ok && data.success) {
+      try {
+        localStorage.removeItem('saheli_reset_session_token');
+        localStorage.removeItem('saheli_reset_email');
+      } catch {}
+    }
     return { success: res.ok && data.success, error: data.error };
   }, []);
 

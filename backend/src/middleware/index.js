@@ -74,7 +74,43 @@ export async function authenticateRequest(req) {
       const stmt = db.prepare(
         'SELECT id, name, email, phone, role, is_verified, account_status, token_version, blood_group, medical_notes, checkin_interval_minutes, created_at, supabase_id FROM users WHERE id = ?'
       );
-      const user = stmt.get(payload.userId);
+      let user = stmt.get(payload.userId);
+
+      // Stateless cross-container state recovery: restore user into this serverless instance
+      if (!user && payload.email) {
+        const nowIso = new Date().toISOString();
+        const isVerifiedVal = payload.isVerified !== undefined
+          ? (payload.isVerified ? 1 : 0)
+          : (payload.is_verified ? 1 : 0);
+        db.prepare(`
+          INSERT OR IGNORE INTO users (
+            id, name, email, phone, password_hash, salt, role,
+            is_verified, email_verified_at, phone_verified_at,
+            account_status, terms_accepted, terms_version, token_version,
+            otp_hash, otp_expires,
+            emergency_pin_hash, created_at, updated_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', 1, 'v2.0', ?, ?, ?, ?, ?, ?)
+        `).run(
+          payload.userId,
+          payload.name || 'User',
+          payload.email,
+          payload.phone || '',
+          payload.passwordHash || 'stateless-session',
+          payload.salt || 'stateless-salt',
+          payload.role || 'user',
+          isVerifiedVal,
+          isVerifiedVal ? nowIso : null,
+          isVerifiedVal ? nowIso : null,
+          payload.tokenVersion || 1,
+          payload.otpHash || null,
+          payload.otpExpires || null,
+          payload.emergencyPinHash || null,
+          nowIso,
+          nowIso
+        );
+        user = stmt.get(payload.userId);
+      }
+
       if (!user) return null;
 
       // Disabled or suspended account rejection
