@@ -889,9 +889,9 @@ export function AuthModal({ isOpen, onClose, initialView = 'login', onOpenLegal,
             }}>
               <ShieldCheck size={22} style={{ color: 'var(--color-brand-primary)', flexShrink: 0 }} />
               <div>
-                Please check your <strong>Gmail inbox</strong> for your 6-digit verification code and enter it below.
-                <div style={{ fontSize: '0.75rem', marginTop: '4px', color: 'var(--color-text-muted)' }}>
-                  Tip: If it doesn't appear in your Primary inbox within 30 seconds, please check your <strong>Spam / Junk</strong> folder or click Resend.
+                Please check your <strong>Gmail inbox</strong> for your 6-digit verification code from <strong>noveraaweb@gmail.com</strong>.
+                <div style={{ fontSize: '0.75rem', marginTop: '6px', color: '#B45309', fontWeight: 600 }}>
+                  ⚠️ Check your <strong>Spam / Junk folder</strong> or search <code>from:noveraaweb@gmail.com</code> if it does not appear in your Primary inbox.
                 </div>
               </div>
             </div>

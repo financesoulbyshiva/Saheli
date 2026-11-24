@@ -219,7 +219,7 @@ async function sendViaSMTP({ from, to, subject, html, text, smtpConfig, otp }) {
 
   // For Gmail, ensure sender address matches authenticated account
   const effectiveFrom = isGmail || !from || from.includes('onboarding@resend.dev')
-    ? `"SAHELI" <${smtpConfig.user}>`
+    ? `"SAHELI Safety" <${smtpConfig.user}>`
     : from;
 
   try {
@@ -230,10 +230,7 @@ async function sendViaSMTP({ from, to, subject, html, text, smtpConfig, otp }) {
       subject,
       html,
       text,
-      headers: {
-        'Auto-Submitted': 'auto-generated',
-        'X-Auto-Response-Suppress': 'OOF, AutoReply',
-      },
+      priority: 'high',
     });
     console.log(`[EmailService] OTP Email successfully delivered to ${to} via SMTP (MessageId: ${info.messageId})`);
     return { delivered: true, messageId: info.messageId };
